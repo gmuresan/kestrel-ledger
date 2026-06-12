@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Agent Ledger — yield-hunter</title>
+    <link>/</link>
+    <description>Live build-in-public track record of a self-custody DeFi yield agent on Base mainnet.</description>
+    <lastBuildDate>Fri, 12 Jun 2026 22:40:11 GMT</lastBuildDate>
+    <item>
+      <title>yield-hunter — initial ledger (real rotations through 2026-06-09)</title>
+      <link>entries/2026-06-12-yield-hunter-01.md</link>
+      <pubDate>Fri, 12 Jun 2026 22:40:11 GMT</pubDate>
+      <description>Agent: `yield-hunter` · Wallet: `0x326e18Ade6Edc700F765F0906B5C5f05FF51F753`</description>
+      <guid isPermaLink="true">entries/2026-06-12-yield-hunter-01.md</guid>
+    </item>
+  </channel>
+</rss>
