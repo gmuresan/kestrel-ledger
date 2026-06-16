@@ -13,9 +13,9 @@ import { defineConfig } from 'astro/config';
 // public/feed.xml). @astrojs/rss requires `site` to build absolute <link>s.
 export default defineConfig({
   // Public site URL — used by @astrojs/rss for absolute feed links.
-  // Set to the Cloudflare base domain; override per-deploy with the SITE env var
-  // in the Cloudflare Pages build settings if a custom domain is attached.
-  site: process.env.SITE ?? 'https://aegentic.workers.dev',
+  // The `ledger` Worker serves at ledger.<subdomain>.workers.dev; override
+  // per-deploy with the SITE env var if a custom domain is attached.
+  site: process.env.SITE ?? 'https://ledger.aegentic.workers.dev',
   // `static` is the default output; declared explicitly for intent.
   output: 'static',
   build: {

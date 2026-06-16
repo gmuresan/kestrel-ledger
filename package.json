@@ -7,7 +7,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "deploy": "npm run build && npx --yes wrangler pages deploy dist --project-name=ledger"
+    "deploy": "npm run build && npx --yes wrangler deploy"
   },
   "devDependencies": {
     "@astrojs/rss": "4.0.12",

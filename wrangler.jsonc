@@ -1,0 +1,11 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ledger",
+  "compatibility_date": "2026-06-16",
+  // Static-assets-only Worker (no `main`): Cloudflare serves the built Astro
+  // site in ./dist directly. `npm run build` produces dist/, then
+  // `wrangler deploy` uploads it to the `ledger` Worker.
+  "assets": {
+    "directory": "./dist"
+  }
+}
