@@ -5,3 +5,8 @@ node_modules/
 
 # Astro-generated content-collection / env type shim (regenerated on every build)
 src/env.d.ts
+
+# This repo is npm-based (package-lock.json). A stray pnpm lockfile would make
+# Cloudflare's build auto-detect pnpm — keep it out.
+pnpm-lock.yaml
+.wrangler/
