@@ -20,6 +20,11 @@ const ledger = defineCollection({
     date: z.string(), // ISO-8601 as written by the publish skill
     agent: z.string(),
     wallet: z.string(),
+    // Story 75.4 (AC1): stable per-agent slug for attribution + 75.5 per-agent
+    // routing. `.optional()` (NOT `.default()`) so existing 71/72 entries that
+    // omit the field validate unchanged — a missing slug stays `undefined`,
+    // never a misleading empty string.
+    agentSlug: z.string().optional(),
     stream: z.enum(['agent-ledger', 'build-log']).default('agent-ledger'),
   }),
 });

@@ -10,3 +10,9 @@ src/env.d.ts
 # Cloudflare's build auto-detect pnpm — keep it out.
 pnpm-lock.yaml
 .wrangler/
+
+# Test fixtures (in test/fixtures/) are copied into src/content/ledger/ only during the
+# build test and removed after. Ignore them here so a crashed test run can never commit
+# (or publish) a fixture entry. Real entries never match these slugs.
+src/content/ledger/*-yield-agent-v1-*.md
+src/content/ledger/2026-06-15-aegentic-build-log-01.md

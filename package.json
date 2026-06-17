@@ -7,11 +7,19 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
+    "lint": "eslint src --max-warnings 0",
+    "test": "vitest run",
     "deploy": "npm run build && npx --yes wrangler deploy"
   },
   "devDependencies": {
     "@astrojs/rss": "4.0.12",
-    "astro": "4.16.19"
+    "@eslint/js": "10.0.1",
+    "astro": "4.16.19",
+    "eslint": "10.4.1",
+    "eslint-plugin-astro": "1.3.1",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.60.1",
+    "vitest": "4.1.8"
   },
   "dependencies": {
     "marked": "18.0.5"
