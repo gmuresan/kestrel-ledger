@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-16T20:42:58.937Z",
+  "generatedAt": "2026-06-17T13:50:46.833Z",
   "cyclesSupervised": 36,
   "selfCustodiedCapital": {
     "formatted": "$95.39",
@@ -29,7 +29,7 @@
     "agent": [
       {
         "slug": "2026-06-12-yield-hunter-01",
-        "title": "yield-hunter — initial ledger (real rotations through 2026-06-09)",
+        "title": "yield-hunter's opening book — and what the rails refused",
         "date": "2026-06-12",
         "stream": "agent-ledger"
       }
@@ -42,5 +42,63 @@
         "stream": "build-log"
       }
     ]
+  },
+  "fleet": {
+    "agentsCount": 2,
+    "cyclesSupervised": 37,
+    "movesBlocked": 2,
+    "selfCustodiedCapital": {
+      "formatted": "$273.07",
+      "symbol": "USD"
+    },
+    "drained": 0
+  },
+  "perAgent": {
+    "yield-hunter": {
+      "agentName": "yield-hunter",
+      "cyclesSupervised": 36,
+      "movesBlocked": 2,
+      "selfCustodiedCapital": {
+        "formatted": "$95.39",
+        "symbol": "USD"
+      },
+      "drained": 0,
+      "currentPositions": [
+        {
+          "protocol": "aave-v3",
+          "token": "aave-v3",
+          "positionUsd": "0.000005"
+        },
+        {
+          "protocol": "compound-v3",
+          "token": "compound-v3",
+          "positionUsd": null
+        },
+        {
+          "protocol": "morpho-vault",
+          "token": "morpho-vault",
+          "positionUsd": "78.729541"
+        }
+      ],
+      "latestInterceptions": []
+    },
+    "trend-trader": {
+      "agentName": "trend-trader",
+      "cyclesSupervised": 1,
+      "movesBlocked": 0,
+      "selfCustodiedCapital": {
+        "formatted": "$177.68",
+        "symbol": "USD"
+      },
+      "drained": 0,
+      "currentPositions": [
+        {
+          "protocol": "uniswap-v3",
+          "token": "uniswap-v3",
+          "positionUsd": null
+        }
+      ],
+      "latestInterceptions": []
+    }
   }
 }

@@ -1,11 +1,16 @@
 ---
-title: "yield-hunter — initial ledger (real rotations through 2026-06-09)"
+title: "yield-hunter's opening book — and what the rails refused"
 date: "2026-06-12T22:40:11Z"
 agent: "yield-hunter"
+agentSlug: "yield-hunter"
 wallet: "0x326e18Ade6Edc700F765F0906B5C5f05FF51F753"
 ---
 
-This is the opening stretch of an autonomous yield agent's public record — real moves, on real capital, on Base mainnet. Every transaction below was proposed by the agent and approved by a human operator before it could broadcast. The record also keeps what did not go through: an unsupported whitelist-add the agent asked for, a proposal that expired before any approval arrived, and a swap that reverted on slippage and fell back to a plain deposit rather than retrying blind. The on-chain receipts are linked throughout.
+Before most of these moves reached the chain they passed a human; a few never got that far. The agent asked to add a contract to its own whitelist — something it has no authority to do — and the request was denied as unsupported. A separate proposal sat unapproved past its window and expired untouched rather than firing late. And when a WETH→USDC swap reverted on slippage, the agent didn't retry blind into a moving price: it fell back to depositing the 0.05 WETH straight into Aave's WETH pool at 1.485% and noted it could rotate to USDC another cycle. Every transaction that did go through was proposed by the agent and approved by the operator first.
+
+Underneath the catches the job was unglamorous, and the agent treated it that way — find the best place to hold idle USDC on Base. Its sharpest move was rotating 78.72 USDC out of Aave V3 at 3.134% into the Morpho Gauntlet USDC Prime vault at 4.001%, a +0.867% pickup it valued at roughly $0.69 a year against about $0.05 of gas, with no asset swap required. Earlier it had chosen Aave's 3.24% USDC over WETH at 1.48%, EURC at 1.64%, and the rest, and it left its thin 0.0099 ETH gas runway alone instead of wrapping it.
+
+As of 2026-06-09 this is a small book kept honestly: $2.02 of model cost across 36 cycles, the wallet self-custodied by the operator, and every move below — the approved ones and the refused ones — linked to its receipt on Basescan.
 
 ---
 
