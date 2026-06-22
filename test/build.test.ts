@@ -345,12 +345,11 @@ describe('AC5 (75.8) — waitlist surface', () => {
     execFileSync('node', ['node_modules/astro/astro.js', 'build'], { cwd: root, stdio: 'ignore' });
   });
 
-  // Test 1 (AC1) — the waitlist section renders on the homepage with the Buttondown embed
-  // endpoint and the waitlist heading.
-  it('1. dist/index.html carries the Buttondown form endpoint and the waitlist heading', () => {
+  // Test 1 (AC1) — the waitlist section renders on the homepage with the Kit form endpoint and
+  // the waitlist heading. No third-party script is loaded; the native POST is the submission path.
+  it('1. dist/index.html carries the Kit form endpoint and the waitlist heading', () => {
     const html = read('index.html');
-    expect(html).toContain('buttondown.com/api/emails/embed-subscribe');
-    expect(html).toContain('buttondown.com/js/embed.js');
+    expect(html).toContain('app.kit.com/forms/9596459/subscriptions');
     expect(html).toContain('Be first to try it');
   });
 
@@ -370,14 +369,14 @@ describe('AC5 (75.8) — waitlist surface', () => {
     expect(dirty.hits.map((h) => h.term)).toContain('safe');
   });
 
-  // Test 3 (AC3) — the Buttondown script/domain is absent from every non-waitlist surface:
+  // Test 3 (AC3) — the Kit form endpoint is absent from every non-waitlist surface:
   // the archive, a sampled entry page, and a sampled agent page.
-  it('3. buttondown.com is absent from the archive, an entry page, and an agent page', () => {
-    expect(read('ledger/index.html')).not.toContain('buttondown.com');
-    expect(read(`ledger/${NO_STREAM_SLUG}/index.html`)).not.toContain('buttondown.com');
-    expect(read('agents/yield-dev/index.html')).not.toContain('buttondown.com');
-    expect(read('about/index.html')).not.toContain('buttondown.com');
-    expect(read('feed.xml')).not.toContain('buttondown.com');
+  it('3. kit.com is absent from the archive, an entry page, and an agent page', () => {
+    expect(read('ledger/index.html')).not.toContain('kit.com');
+    expect(read(`ledger/${NO_STREAM_SLUG}/index.html`)).not.toContain('kit.com');
+    expect(read('agents/yield-dev/index.html')).not.toContain('kit.com');
+    expect(read('about/index.html')).not.toContain('kit.com');
+    expect(read('feed.xml')).not.toContain('kit.com');
   });
 
   // Test 4 (AC2) — the privacy line renders below the form on the homepage.
@@ -387,25 +386,21 @@ describe('AC5 (75.8) — waitlist surface', () => {
     expect(html).toContain('Unsubscribe at any time');
   });
 
-  // Test 5 (AC1) — the CONFIGURE_ME marker is discoverable in source but is not surfaced as
-  // visible prose in the built HTML (it lives in the form action= URL, not between tags).
-  it('5. CONFIGURE_ME is in the component source but not rendered as visible text', () => {
+  // Test 5 (AC1) — the Kit form ID lives in the form action= URL, never surfaced as visible
+  // prose in the built HTML (it sits inside the action= attribute, not between tags).
+  it('5. the Kit form ID is in the action URL but not rendered as visible text', () => {
     const source = readFileSync(waitlistAstroPath, 'utf-8');
-    expect(source).toContain('CONFIGURE_ME');
+    expect(source).toContain('9596459');
 
     const html = read('index.html');
-    // The placeholder is substituted into the action= attribute, never as element text content.
-    expect(html).not.toContain('>CONFIGURE_ME<');
-    expect(html).not.toMatch(/>\s*CONFIGURE_ME\s*</);
+    expect(html).not.toMatch(/>\s*9596459\s*</);
   });
 
-  // Test 6 (AC1/G14) — the dedicated /waitlist page builds and carries the Buttondown form
-  // endpoint, the embed script, and the waitlist heading (positive half of the G14 present-
-  // where-rendered invariant).
-  it('6. dist/waitlist/index.html builds and carries the Buttondown form endpoint, embed script, and waitlist heading', () => {
+  // Test 6 (AC1/G14) — the dedicated /waitlist page builds and carries the Kit form endpoint
+  // and the waitlist heading (positive half of the G14 present-where-rendered invariant).
+  it('6. dist/waitlist/index.html builds and carries the Kit form endpoint and waitlist heading', () => {
     const html = read('waitlist/index.html');
-    expect(html).toContain('buttondown.com/api/emails/embed-subscribe');
-    expect(html).toContain('buttondown.com/js/embed.js');
+    expect(html).toContain('app.kit.com/forms/9596459/subscriptions');
     expect(html).toContain('Be first to try it');
   });
 });

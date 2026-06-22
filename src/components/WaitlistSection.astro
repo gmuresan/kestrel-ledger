@@ -1,26 +1,22 @@
 ---
-// WaitlistSection (Story 75.8, AC1–AC4) — the only third-party-script surface on the site.
-// A Buttondown-backed email capture: managed double-opt-in, unsubscribe, CAN-SPAM/GDPR all live
-// in Buttondown (locked decision LD5), so this repo ships zero server-side code. The form POSTs
-// directly to Buttondown's embed endpoint, so it works on the static Cloudflare deploy with no
-// Cloudflare Function (AC1).
+// WaitlistSection (Story 75.8, AC1–AC4) — a Kit (kit.com) email capture.
+// Managed double-opt-in, unsubscribe, CAN-SPAM/GDPR all live in Kit (locked decision LD5), so
+// this repo ships zero server-side code. The form POSTs directly to Kit's form endpoint, so it
+// works on the static Cloudflare deploy with no Cloudflare Function (AC1). No third-party script
+// is loaded: the native POST IS the submission path (the JS-off fallback Kit forms rely on), so
+// the whole site stays script-clean (AC3).
 //
 // G14 — the CTA is bound and private: it invites interest WHEN THE PRODUCT IS READY, never
 // promises a return, a guarantee, or that the product exists today. A clear privacy line names
-// Buttondown's managed unsubscribe. No dark patterns, no pre-checked consent.
+// Kit's managed unsubscribe. No dark patterns, no pre-checked consent.
 //
 // G2 — every string below (markup AND these comments) must survive the lintHomepageCopy
 // banned-phrase gate; see BANNED_TERMS in scripts/lint-homepage-copy.ts for the denylist.
 //
-// AC3 — the Buttondown <script> lives INSIDE this component (never in BaseLayout) so it is only
-// emitted on pages that render <WaitlistSection /> (the homepage §6 and the /waitlist page).
-// Entry, agent, archive, and about pages do not import this component and stay script-clean.
-//
-// CONFIGURE_ME: the Buttondown account slug. Gm replaces it with the real username after account
-// creation. It appears only in the form `action=` URL (not as visible prose), so a future
-// operator can grep for it without it confusing a reader.
-const BUTTONDOWN_USERNAME = 'CONFIGURE_ME';
-const EMBED_ACTION = `https://buttondown.com/api/emails/embed-subscribe/${BUTTONDOWN_USERNAME}`;
+// KIT_FORM_ID is public (it appears in any Kit embed snippet), so it lives in the form `action=`
+// URL as a literal. Replace it if the Kit form is recreated.
+const KIT_FORM_ID = '9596459';
+const EMBED_ACTION = `https://app.kit.com/forms/${KIT_FORM_ID}/subscriptions`;
 ---
 
 <section class="waitlist" id="waitlist" aria-label="Waitlist">
@@ -30,14 +26,14 @@ const EMBED_ACTION = `https://buttondown.com/api/emails/embed-subscribe/${BUTTON
     out when access opens.
   </p>
 
-  <form class="embeddable-buttondown-form" action={EMBED_ACTION} method="post" target="popupwindow">
-    <label class="field-label" for="bd-email">Email address</label>
+  <form class="embeddable-kit-form" action={EMBED_ACTION} method="post" target="popupwindow">
+    <label class="field-label" for="kit-email">Email address</label>
     <div class="field-row">
       <input
-        id="bd-email"
+        id="kit-email"
         class="email-input"
         type="email"
-        name="email"
+        name="email_address"
         placeholder="you@example.com"
         autocomplete="email"
         required
@@ -47,16 +43,8 @@ const EMBED_ACTION = `https://buttondown.com/api/emails/embed-subscribe/${BUTTON
   </form>
 
   <p class="privacy">
-    No spam. Waitlist updates only. Unsubscribe at any time — the list is managed by Buttondown.
+    No spam. Waitlist updates only. Unsubscribe at any time — the list is managed by Kit.
   </p>
-
-  {/* AC3 — Buttondown embed JS. Enhances the form with inline submission + confirmation UX;
-      with JS off the form falls back to a native POST to the same endpoint (AC1/AC4). Placed
-      AFTER the form, INSIDE this component, never in BaseLayout, so it is scoped to the
-      waitlist surface only. `is:inline` keeps Astro from hoisting/bundling it — the third-party
-      <script> stays a literal tag in the page HTML, so the AC3 probe can see it is present only
-      where the component renders and absent everywhere else. */}
-  <script is:inline src="https://buttondown.com/js/embed.js"></script>
 </section>
 
 <style>
