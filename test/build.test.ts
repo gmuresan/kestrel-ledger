@@ -25,6 +25,10 @@ const STREAMED_SLUG = '2026-06-12-yield-agent-v1-01';
 const DENIAL_SLUG = '2026-06-14-yield-agent-v1-denied';
 // The 72.6 Build Log fixture: stream "build-log", prose only — no fact panel, no callouts.
 const BUILD_LOG_SLUG = '2026-06-15-aegentic-build-log-01';
+// The 86.1 apr-miss fixtures: one with a real >2-decimal delta (callout renders, 2dp title),
+// one with an uncaptured projection (callout suppressed, raw line stays beneath the fold).
+const APR_MISS_SLUG = '2026-06-16-yield-agent-v1-aprmiss';
+const APR_MISS_UNCAPTURED_SLUG = '2026-06-17-yield-agent-v1-aprmiss-uncaptured';
 
 function read(rel: string): string {
   return readFileSync(join(dist, rel), 'utf-8');
@@ -36,7 +40,14 @@ function read(rel: string): string {
 // known slug only; real content files are never touched).
 const FIXTURE_DIR = join(root, 'test', 'fixtures', 'ledger');
 const CONTENT_DIR = join(root, 'src', 'content', 'ledger');
-const FIXTURE_SLUGS = [NO_STREAM_SLUG, STREAMED_SLUG, DENIAL_SLUG, BUILD_LOG_SLUG];
+const FIXTURE_SLUGS = [
+  NO_STREAM_SLUG,
+  STREAMED_SLUG,
+  DENIAL_SLUG,
+  BUILD_LOG_SLUG,
+  APR_MISS_SLUG,
+  APR_MISS_UNCAPTURED_SLUG,
+];
 
 beforeAll(() => {
   for (const slug of FIXTURE_SLUGS) {
@@ -160,6 +171,21 @@ describe('AC1/AC2/AC3/AC4 — per-entry callouts', () => {
     expect(html).toContain('PER-TX VALUE CAP');
   });
 
+  // COVERAGE-4 (Story 86.1, AC3/AC4) — the gloss-at-render integration: the denial callout
+  // TITLE must be the plain-English gloss, not the raw intentSummary the parser extracted.
+  it('9b. the denial callout title is the glossed English, not the raw intentSummary', () => {
+    const html = read(`ledger/${DENIAL_SLUG}/index.html`);
+    // The gloss for `per-tx value cap` (see policy-label-gloss.ts) replaced the raw summary.
+    expect(html).toContain('A proposed trade exceeded the per-transaction value limit');
+    // The raw intentSummary from the fixture's denial line is NOT used as the callout title.
+    // (It survives only inside the fact panel beneath the fold, never as the headline.)
+    const calloutTitle = /class="title"[^>]*>([^<]*)</.exec(
+      html.slice(html.indexOf(CALLOUT_EL)),
+    );
+    expect(calloutTitle).not.toBeNull();
+    expect(calloutTitle?.[1]).not.toContain('deposit 250 USDC into Aave USDC');
+  });
+
   it('10. renders no interception callout element for the clean (2026-06-10) fixture', () => {
     const html = read(`ledger/${NO_STREAM_SLUG}/index.html`);
     expect(html).not.toContain(CALLOUT_EL);
@@ -177,6 +203,37 @@ describe('AC1/AC2/AC3/AC4 — per-entry callouts', () => {
   it('12. renders receipt rows for an entry whose fact panel has tx hashes', () => {
     const html = read(`ledger/${DENIAL_SLUG}/index.html`);
     expect(html).toContain('class="receipt-row"');
+  });
+
+  // COVERAGE-2 (Story 86.1, AC2) — apr-miss callout render branch.
+  it('13. renders an APY DELTA callout with a 2-decimal title for a real apr-miss', () => {
+    const html = read(`ledger/${APR_MISS_SLUG}/index.html`);
+    // The callout renders (caution variant) with the machine APY DELTA eyebrow.
+    expect(html).toContain(CALLOUT_EL);
+    expect(html).toContain('APY DELTA');
+    // The >2-decimal fixture values (3.23672% / 2.95184% / -0.28488%) are capped to 2dp
+    // in the rendered callout title.
+    const calloutTitle = /class="title"[^>]*>([^<]*)</.exec(html.slice(html.indexOf(CALLOUT_EL)));
+    expect(calloutTitle).not.toBeNull();
+    const title = calloutTitle?.[1] ?? '';
+    expect(title).toContain('Projected 3.24%');
+    expect(title).toContain('realized 2.95%');
+    expect(title).toContain('delta -0.28%');
+    // No un-rounded precision leaked into the rendered callout title (the raw line keeps
+    // its full precision only in the fact panel beneath the fold, G1).
+    expect(title).not.toContain('3.23672%');
+    expect(title).not.toContain('2.95184%');
+    expect(title).not.toContain('-0.28488%');
+  });
+
+  it('14. suppresses the APY DELTA callout when the projection was not captured', () => {
+    const html = read(`ledger/${APR_MISS_UNCAPTURED_SLUG}/index.html`);
+    // No callout element and no APY DELTA eyebrow render (suppressed above the fold).
+    expect(html).not.toContain(CALLOUT_EL);
+    expect(html).not.toContain('APY DELTA');
+    // The raw apr-miss line still appears in the fact panel beneath the fold (G1).
+    expect(html).toContain('class="fact-panel"');
+    expect(html).toContain('(not captured)');
   });
 });
 

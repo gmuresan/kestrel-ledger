@@ -22,6 +22,7 @@ import ReceiptRow from '../../components/ReceiptRow.astro';
 import { splitEntry } from '../../lib/split-entry';
 import { parseEntrySignals, parseReceiptRows, type EntrySignal } from '../../lib/parse-entry-signals';
 import { glossPolicyLabel } from '../../lib/policy-label-gloss';
+import { capAprPrecision, shouldSuppressAprMiss } from '../../lib/apr-format';
 
 export async function getStaticPaths() {
   const entries = await getCollection('ledger');
@@ -51,15 +52,8 @@ interface CalloutProps {
   title: string;
 }
 
-// Cap a parsed APR string ("3.23672%", "4.00%", "—", "(not captured)") to at most
-// 2 decimal places (Story 86.1, AC2) without inventing precision. Strips a trailing
-// `%`, rounds the numeric part to 2 decimals, and re-adds `%`. A non-numeric token
-// (e.g. "—") passes through unchanged — no fabricated number.
-function capAprPrecision(raw: string): string {
-  const m = /^(-?\d+(?:\.\d+)?)%$/.exec(raw.trim());
-  if (m === null) return raw;
-  return `${Number(m[1]).toFixed(2)}%`;
-}
+// APR rounding (capAprPrecision) + apr-miss suppression (shouldSuppressAprMiss) are pure
+// helpers in ../../lib/apr-format (Story 86.1, AC2) — extracted so they are unit-testable.
 
 // Map each parsed signal to InterceptionCallout props (variant + eyebrow + title).
 // Returns `null` when the signal carries no honest above-fold story (Story 86.1, AC2:
@@ -88,10 +82,11 @@ function toCallout(signal: EntrySignal): CalloutProps | null {
         title: 'A repeated back-and-forth was detected and suppressed.',
       };
     case 'apr-miss':
-      // No captured projection → there is no delta to show; suppress the callout
-      // rather than render "Projected (not captured)%…" (Story 86.1, AC2). The raw
-      // line still appears in the fact panel beneath the fold (G1).
-      if (signal.projected === '(not captured)') return null;
+      // No captured projection/realization → there is no honest delta to show; suppress
+      // the callout rather than render "Projected (not captured)%…" or "realized
+      // (not captured)" (Story 86.1, AC2). The raw line still appears in the fact panel
+      // beneath the fold (G1).
+      if (shouldSuppressAprMiss(signal)) return null;
       return {
         variant: 'caution',
         eyebrow: 'APY DELTA',

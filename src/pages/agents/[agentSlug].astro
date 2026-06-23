@@ -21,6 +21,7 @@ import state from '../../data/state.json';
 import screenshotsRaw from '../../data/screenshots.json';
 import type { HomepageState, PerAgentState } from '../../lib/state-types';
 import type { ScreenshotManifestEntry } from '../../lib/screenshot-types';
+import { positionDisplayUsd } from '../../lib/position-display';
 
 const s = state as HomepageState;
 
@@ -36,24 +37,9 @@ export function getStaticPaths() {
 const { agentState } = Astro.props as { agentState: PerAgentState };
 const agentSlug = Astro.params.agentSlug;
 
-/** Format a raw decimal string as a USD display string ($1,234.50) matching formatUsd in MetricStrip. */
-function formatUsd(raw: string | null): string {
-  if (raw === null) return '$—';
-  const n = Number(raw);
-  if (!Number.isFinite(n)) return '$—';
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
-}
-
-// Story 86.1 (AC1) — a held leg with a null or sub-cent USD value is dust, not a
-// $0.00 position. Returning `null` here signals the row to render an honest
-// "unpriced — dust" caption (G1: no fabricated dollar value) instead of $0.00 / $—.
-const DUST_THRESHOLD_USD = 0.01;
-function positionDisplayUsd(raw: string | null): string | null {
-  if (raw === null) return null;
-  const n = Number(raw);
-  if (!Number.isFinite(n) || n < DUST_THRESHOLD_USD) return null;
-  return formatUsd(raw);
-}
+// Story 86.1 (AC1) — positionDisplayUsd is a pure helper in ../../lib/position-display:
+// a held leg with a null / non-finite / sub-cent USD value returns `null`, signalling the
+// row to render an honest "unpriced — dust" caption (G1) instead of $0.00 / $—.
 
 // Entries attributed to this agent, newest-first. Older entries lack `agentSlug` and are
 // correctly absent from this filtered view (AC2 — graceful empty state).
