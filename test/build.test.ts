@@ -367,6 +367,20 @@ describe('Story 86.3 — verify page build probes', () => {
   });
 });
 
+describe('Story 86.4 — self-custody page build probes', () => {
+  // COVERAGE-2 (Story 86.4): zero client JS on the self-custody page.
+  it('COVERAGE-2: dist/self-custody/index.html contains no <script element', () => {
+    const html = read('self-custody/index.html');
+    expect(html).not.toContain('<script');
+  });
+
+  // COVERAGE-1 (Story 86.4, AC4): /about links to /self-custody.
+  it('COVERAGE-1: dist/about/index.html contains href to /self-custody', () => {
+    const html = read('about/index.html');
+    expect(html).toContain('href="/self-custody"');
+  });
+});
+
 describe('splitEntry — prose ↔ fact-panel split', () => {
   it('splits on the first lone --- thematic break', () => {
     const { prose, fact } = splitEntry('the prose line\n\n---\n\n## THE RECORD\n\nfact rows');
