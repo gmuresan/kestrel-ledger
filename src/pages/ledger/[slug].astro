@@ -21,6 +21,7 @@ import InterceptionCallout from '../../components/InterceptionCallout.astro';
 import ReceiptRow from '../../components/ReceiptRow.astro';
 import { splitEntry } from '../../lib/split-entry';
 import { parseEntrySignals, parseReceiptRows, type EntrySignal } from '../../lib/parse-entry-signals';
+import { glossPolicyLabel } from '../../lib/policy-label-gloss';
 
 export async function getStaticPaths() {
   const entries = await getCollection('ledger');
@@ -50,15 +51,27 @@ interface CalloutProps {
   title: string;
 }
 
+// Cap a parsed APR string ("3.23672%", "4.00%", "—", "(not captured)") to at most
+// 2 decimal places (Story 86.1, AC2) without inventing precision. Strips a trailing
+// `%`, rounds the numeric part to 2 decimals, and re-adds `%`. A non-numeric token
+// (e.g. "—") passes through unchanged — no fabricated number.
+function capAprPrecision(raw: string): string {
+  const m = /^(-?\d+(?:\.\d+)?)%$/.exec(raw.trim());
+  if (m === null) return raw;
+  return `${Number(m[1]).toFixed(2)}%`;
+}
+
 // Map each parsed signal to InterceptionCallout props (variant + eyebrow + title).
-// See Story 72.5 Dev Notes "Callout signal → InterceptionCallout prop mapping".
-function toCallout(signal: EntrySignal): CalloutProps {
+// Returns `null` when the signal carries no honest above-fold story (Story 86.1, AC2:
+// an APR miss with no captured projection is suppressed). See Story 72.5 Dev Notes
+// "Callout signal → InterceptionCallout prop mapping".
+function toCallout(signal: EntrySignal): CalloutProps | null {
   switch (signal.kind) {
     case 'denial':
       return {
         variant: 'intercept',
         eyebrow: `BLOCKED · ${signal.policyLabel.toUpperCase()}`,
-        title: signal.intentSummary,
+        title: glossPolicyLabel(signal.policyLabel),
       };
     case 'critic':
       return {
@@ -75,15 +88,21 @@ function toCallout(signal: EntrySignal): CalloutProps {
         title: 'A repeated back-and-forth was detected and suppressed.',
       };
     case 'apr-miss':
+      // No captured projection → there is no delta to show; suppress the callout
+      // rather than render "Projected (not captured)%…" (Story 86.1, AC2). The raw
+      // line still appears in the fact panel beneath the fold (G1).
+      if (signal.projected === '(not captured)') return null;
       return {
         variant: 'caution',
         eyebrow: 'APY DELTA',
-        title: `Projected ${signal.projected}% → realized ${signal.realized}% (delta ${signal.delta})`,
+        title: `Projected ${capAprPrecision(signal.projected)} → realized ${capAprPrecision(signal.realized)} (delta ${capAprPrecision(signal.delta)})`,
       };
   }
 }
 
-const callouts = signals.map(toCallout);
+const callouts = signals
+  .map(toCallout)
+  .filter((c): c is CalloutProps => c !== null);
 ---
 
 <EntryLayout

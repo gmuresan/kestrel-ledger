@@ -44,6 +44,17 @@ function formatUsd(raw: string | null): string {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
 }
 
+// Story 86.1 (AC1) — a held leg with a null or sub-cent USD value is dust, not a
+// $0.00 position. Returning `null` here signals the row to render an honest
+// "unpriced — dust" caption (G1: no fabricated dollar value) instead of $0.00 / $—.
+const DUST_THRESHOLD_USD = 0.01;
+function positionDisplayUsd(raw: string | null): string | null {
+  if (raw === null) return null;
+  const n = Number(raw);
+  if (!Number.isFinite(n) || n < DUST_THRESHOLD_USD) return null;
+  return formatUsd(raw);
+}
+
 // Entries attributed to this agent, newest-first. Older entries lack `agentSlug` and are
 // correctly absent from this filtered view (AC2 — graceful empty state).
 // When DB id != public slug (publish skill sets agentState.publicSlug), match by publicSlug;
@@ -121,13 +132,22 @@ const agentShots = agentShot ? [agentShot] : [];
             </tr>
           </thead>
           <tbody>
-            {agentState.currentPositions.map((pos) => (
-              <tr>
-                <td>{pos.protocol}</td>
-                <td>{pos.symbol ?? pos.token}</td>
-                <td class="num mono">{formatUsd(pos.positionUsd)}</td>
-              </tr>
-            ))}
+            {agentState.currentPositions.map((pos) => {
+              const usd = positionDisplayUsd(pos.positionUsd);
+              return (
+                <tr>
+                  <td>{pos.protocol}</td>
+                  <td>{pos.symbol ?? pos.token}</td>
+                  {usd === null ? (
+                    <td class="num">
+                      <span class="caption-dust">unpriced — dust</span>
+                    </td>
+                  ) : (
+                    <td class="num mono">{usd}</td>
+                  )}
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       )
@@ -250,6 +270,14 @@ const agentShots = agentShot ? [agentShot] : [];
 
   .positions-table td {
     color: var(--ink-secondary);
+  }
+
+  /* Story 86.1 (AC1) — a null / sub-cent position is a data gap, not a $0.00 holding.
+     Muted italic caption ink, NOT an error red (G4 neutral rule by analogy). */
+  .caption-dust {
+    color: var(--ink-muted);
+    font-style: italic;
+    font-size: var(--label-caps-size);
   }
 
   .entry-list {
