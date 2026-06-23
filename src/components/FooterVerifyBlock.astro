@@ -87,6 +87,8 @@ const linkLabel = explorerName ? `↗ ${explorerName}` : '↗ view on the block 
 
   .explorer {
     color: var(--info);
+    /* WCAG 1.4.1 — underline so the link is identifiable without relying on color alone. */
+    text-decoration: underline;
     margin-left: var(--stack);
   }
 

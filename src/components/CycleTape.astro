@@ -8,7 +8,9 @@
 //    (currently total 36, intercepted 2). Introduce no other numbers.
 //  - The caption is AGGREGATE-only and TIMELINE-free — we have counts, not
 //    per-cycle order. No dates, no "latest", no "in a row", no implied sequence.
-//    Mark ordering in the DOM is presentational only, never chronological.
+//    Mark ordering in the DOM is presentational only, never chronological:
+//    intercept marks are EVENLY SPACED across the tape (a structural arrangement),
+//    never clustered at one end, so the layout carries no implied sequence.
 //  - --mark-intercept (red) is the star; --mark-proceed (quiet green) recedes.
 //  - Accessibility: the strip is one role="img" with an aria-label equal to the
 //    caption, so the individual marks aren't announced one by one.
@@ -22,17 +24,26 @@ const { total, intercepted, label } = Astro.props;
 // Guard: clamp intercepted into [0, total]; render nothing meaningful if total <= 0.
 const markCount = Math.max(0, Math.floor(total));
 const interceptCount = Math.min(Math.max(0, Math.floor(intercepted)), markCount);
-const proceedCount = markCount - interceptCount;
 
 // Aggregate-only, timeline-free caption (default). Ordering of marks is presentational.
 const caption = label ?? `${interceptCount} of ${markCount} cycles intercepted by the rail`;
 
-// Build the mark list as a count, not a sequence: quiet proceed marks, then the
-// red intercept marks. DOM order is layout only — the caption carries the meaning.
-const marks: ('proceed' | 'intercept')[] = [
-  ...Array.from({ length: proceedCount }, () => 'proceed' as const),
-  ...Array.from({ length: interceptCount }, () => 'intercept' as const),
-];
+// Build the mark list as a COUNT, not a sequence. The intercept marks are spread evenly
+// across the tape (a deterministic, SSR-only structural arrangement) so the layout reads as
+// mathematical, never chronological — never `[...all-proceeds, ...all-intercepts]`, which a
+// skeptical eye misreads as recent-clustered. The caption carries the only meaning.
+function buildMarks(count: number, intercepts: number): ('proceed' | 'intercept')[] {
+  if (count <= 0) return [];
+  const marks: ('proceed' | 'intercept')[] = Array.from({ length: count }, () => 'proceed');
+  if (intercepts <= 0) return marks;
+  const step = count / intercepts;
+  for (let i = 0; i < intercepts; i++) {
+    const pos = Math.min(Math.floor(step * i + step / 2), count - 1);
+    marks[pos] = 'intercept';
+  }
+  return marks;
+}
+const marks = buildMarks(markCount, interceptCount);
 ---
 
 {

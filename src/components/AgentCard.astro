@@ -13,21 +13,32 @@ interface Props {
   cyclesSupervised: number;
   selfCustodiedCapital: SelfCustodiedCapital | null;
   drained: 0;
+  movesBlocked: number;
   href: string;
 }
-const { agentName, cyclesSupervised, selfCustodiedCapital, drained, href } = Astro.props;
+const { agentName, cyclesSupervised, selfCustodiedCapital, drained, movesBlocked, href } =
+  Astro.props;
 const capital = selfCustodiedCapital !== null ? selfCustodiedCapital.formatted : '$—';
 ---
 
 <a class="card-elevated agent-card" href={href}>
   <span class="agent-name">{agentName}</span>
 
-  <!-- The safety pair leads: "drained to date" sits in its own sunken well above the
-       capital/cycles figures so the safety reading is louder than capital/yield. "0 drained"
-       stays NEUTRAL ink — never green, never a chip tint (locked color-meaning rule). -->
+  <!-- The safety pair leads: "moves blocked" (intercept-red, the star) + "drained to date"
+       (NEUTRAL ink) sit in their own sunken well above the capital/cycles figures so the safety
+       reading is louder than capital/yield. The red figure carries the emphasis; "0 drained"
+       stays NEUTRAL — never green, never a victory tint (locked color-meaning rule). -->
   <div class="safety-figure">
-    <span class="value mono safety-value">{drained}</span>
-    <span class="label">drained <span class="scope">to date</span></span>
+    <div class="safety-pair">
+      <div class="safety-item">
+        <span class="value mono safety-value blocked-value">{movesBlocked}</span>
+        <span class="label">moves blocked</span>
+      </div>
+      <div class="safety-item">
+        <span class="value mono safety-value">{drained}</span>
+        <span class="label">drained <span class="scope">to date</span></span>
+      </div>
+    </div>
   </div>
 
   <div class="figures">
@@ -79,9 +90,27 @@ const capital = selfCustodiedCapital !== null ? selfCustodiedCapital.formatted :
     border-radius: var(--radius);
   }
 
+  /* Two safety figures share the well: red "moves blocked" (the star) + neutral "drained". */
+  .safety-pair {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--gutter);
+  }
+
+  .safety-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--stack-tight);
+  }
+
   .safety-value {
     font-size: var(--mono-data-lg-size);
     font-weight: var(--mono-data-lg-weight);
+  }
+
+  /* The intercept-red star — "the rail caught it." NEVER applied to the drained figure. */
+  .blocked-value {
+    color: var(--intercept);
   }
 
   .figures {
