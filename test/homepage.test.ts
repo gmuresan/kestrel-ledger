@@ -363,6 +363,19 @@ describe('Story 86.2 (AC3) — banned-phrase gate for the Build Log page + curat
   });
 });
 
+// Story 86.3 (AC3) — the banned-phrase lint scans an explicit file list, so the new
+// /verify page source must be added to the linted set here. G2 honesty bar — one denylist,
+// no overclaim on the verify surface.
+describe('Story 86.3 (AC3) — banned-phrase gate for the verify page', () => {
+  const verifyPagePath = join(root, 'src', 'pages', 'verify.astro');
+  it('the /verify page source is clean', () => {
+    const result = lintHomepageCopy([
+      { path: verifyPagePath, source: readFileSync(verifyPagePath, 'utf-8') },
+    ]);
+    expect(result.ok).toBe(true);
+  });
+});
+
 // Helper: build with a given screenshots.json and return the HTML for a specific output file.
 function buildWithScreenshotsForPath(shots: unknown, relPath: string): string {
   writeFileSync(screenshotsPath, `${JSON.stringify(shots, null, 2)}\n`);

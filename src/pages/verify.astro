@@ -1,0 +1,341 @@
+---
+// Verify on Chain (Story 86.3, AC1) — static page documenting the /receipts.json
+// manifest shape and providing copy-pasteable recipes to re-derive each leg's
+// amount from a public Base RPC. Zero client JS. Pure HTML + CSS.
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Verify on Chain — Aegentic">
+  <header class="verify-head">
+    <p class="eyebrow">VERIFY ON CHAIN</p>
+    <h1>Re-derive any leg from the chain</h1>
+    <p class="lede">
+      Every confirmed on-chain action the agent takes is recorded in a machine-readable manifest.
+      You can check this yourself: fetch the manifest, pick any entry with a transaction hash, and
+      verify the amount against the public Base RPC. The operator holds the keys and publishes what
+      the supervised agent did — this page shows you exactly how to confirm it independently.
+    </p>
+  </header>
+
+  <section class="section">
+    <h2>The manifest</h2>
+    <p>
+      Once published, the manifest is available at{' '}
+      <a class="inline-link" href="/receipts.json"><code>/receipts.json</code></a> as a static
+      JSON file served alongside the ledger. It is a JSON array of <code>ReceiptEntry</code>{' '}
+      objects — one per confirmed or unconfirmed on-chain leg. If the file returns a 404, the
+      operator has not yet generated the manifest for this deployment.
+    </p>
+    <p>
+      Fetch it directly to inspect every entry:
+    </p>
+    <pre class="recipe"><code>curl https://ledger.aegentic.workers.dev/receipts.json | jq '.[0]'</code></pre>
+  </section>
+
+  <section class="section">
+    <h2>Field reference</h2>
+    <p>
+      Each entry in the manifest conforms to the <code>ReceiptEntry</code> interface. The fields
+      are described below.
+    </p>
+    <div class="table-wrap">
+      <table class="field-table">
+        <thead>
+          <tr>
+            <th>Field</th>
+            <th>Type</th>
+            <th>Description</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>entrySlug</code></td>
+            <td><code>string</code></td>
+            <td>
+              Matches the ledger entry filename — format <code>YYYY-MM-DD-&lt;agentSlug&gt;</code>.
+              Use this to cross-reference the manifest entry with the corresponding ledger page.
+            </td>
+          </tr>
+          <tr>
+            <td><code>operation</code></td>
+            <td><code>"deposit" | "withdraw"</code></td>
+            <td>
+              Whether the leg moved funds into a protocol (<code>deposit</code>) or withdrew them
+              (<code>withdraw</code>).
+            </td>
+          </tr>
+          <tr>
+            <td><code>protocol</code></td>
+            <td><code>string</code></td>
+            <td>
+              Protocol identifier, e.g. <code>"aave-v3"</code> or <code>"morpho"</code>. Use this
+              to look up the canonical pool contract address for that protocol on Base.
+            </td>
+          </tr>
+          <tr>
+            <td><code>amount</code></td>
+            <td><code>string</code></td>
+            <td>
+              Raw token base units, stored as a string to avoid floating-point precision loss.
+              Never parse this as a float — use BigInt or integer arithmetic. Example: USDC has 6
+              decimals, so 0.5 USDC is <code>"500000"</code>; WETH has 18 decimals, so 0.5 WETH is
+              <code>"500000000000000000"</code>.
+            </td>
+          </tr>
+          <tr>
+            <td><code>amountFmt</code></td>
+            <td><code>string</code></td>
+            <td>
+              Human-readable amount — what the ledger prose displays, e.g. <code>"0.5"</code>. See
+              the amount-equality check below to verify this matches <code>amount</code>.
+            </td>
+          </tr>
+          <tr>
+            <td><code>tokenDecimals</code></td>
+            <td><code>number</code></td>
+            <td>
+              Decimal places for the token. 18 for ETH/WETH; 6 for USDC. Used in the
+              amount-equality check.
+            </td>
+          </tr>
+          <tr>
+            <td><code>txHash</code></td>
+            <td><code>string | null</code></td>
+            <td>
+              Transaction hash on Base (chainId 8453). Fetch this hash from any public Base RPC to
+              confirm the contract address and log data. <code>null</code> means the transaction was
+              not confirmed; skip unconfirmed legs in any verification recipe.
+            </td>
+          </tr>
+          <tr>
+            <td><code>chainId</code></td>
+            <td><code>number</code></td>
+            <td>
+              Always <code>8453</code> (Base mainnet) for current entries.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Amount-equality check</h2>
+    <p>
+      The manifest stores two representations of every amount: <code>amountFmt</code> (what the
+      ledger shows) and <code>amount</code> (raw base units as a string). The equality check is:
+    </p>
+    <pre class="recipe"><code>BigInt(amount) ≈ parseFloat(amountFmt) × 10^tokenDecimals</code></pre>
+    <p>
+      Use integer (BigInt) arithmetic to avoid rounding errors, especially for 18-decimal tokens
+      where floating-point loses precision. Here is a concrete example in Node.js or the browser
+      console — substitute your own values from the manifest:
+    </p>
+    <pre class="recipe"><code>// Node.js / browser console — integer equality check
+// Replace &lt;amount&gt;, &lt;decimals&gt;, and &lt;integerPart&gt; with values from the entry.
+const amount = BigInt("&lt;amount&gt;");      // from receipts.json, e.g. "500000000000000000"
+const decimals = BigInt(&lt;decimals&gt;);   // from receipts.json, e.g. 18
+const scale = 10n ** decimals;
+
+// For a whole-number amountFmt like "0.5", split into integer and fractional parts:
+// 0.5 WETH = 500 * scale / 1000 = 500000000000000000n
+// The comparison is approximate for non-integer amountFmt values — use this as a sanity check.
+console.log(amount === 500n * scale / 1000n);  // [example] true for "0.5" with decimals=18</code></pre>
+    <p>
+      For integer <code>amountFmt</code> values the check is exact. For non-integer values
+      (e.g. <code>"0.5"</code>), the check is approximate due to fractional-part arithmetic —
+      use it as a sanity check, not a cryptographic proof.
+    </p>
+  </section>
+
+  <section class="section">
+    <h2>Verify a transaction</h2>
+    <p>
+      Once you have a <code>txHash</code> from the manifest, you can fetch the transaction from any
+      public Base RPC and confirm that the contract address matches the protocol's canonical pool
+      and that the calldata or event logs match the stated <code>amount</code>. Legs with
+      <code>txHash: null</code> are unconfirmed — skip them.
+    </p>
+
+    <h3>Option A — Foundry <code>cast</code></h3>
+    <p>
+      If you have <a class="inline-link" href="https://getfoundry.sh" rel="noopener noreferrer" target="_blank">Foundry</a> installed:
+    </p>
+    <pre class="recipe"><code># Replace &lt;txHash&gt; with the hash from the manifest entry.
+cast tx &lt;txHash&gt; --rpc-url https://mainnet.base.org</code></pre>
+    <p>
+      This prints the raw transaction fields: <code>to</code> (the contract the agent called),
+      <code>input</code> (the encoded calldata), and the full receipt. Confirm that <code>to</code>
+      matches the protocol's pool address on Base and that the calldata encodes the stated
+      <code>amount</code>.
+    </p>
+
+    <h3>Option B — <code>curl</code> + <code>jq</code></h3>
+    <p>No extra tooling required — any machine with <code>curl</code> and <code>jq</code>:</p>
+    <pre class="recipe"><code># Replace &lt;txHash&gt; with the hash from the manifest entry.
+curl -s -X POST https://mainnet.base.org \
+  -d '{"{"}\"jsonrpc\":\"2.0\",\"method\":\"eth_getTransactionByHash\",\"params\":[\"&lt;txHash&gt;\"],\"id\":1{"}"}' \
+  -H 'Content-Type: application/json' \
+  | jq '.result'</code></pre>
+
+    <p>
+      The JSON-RPC response includes <code>to</code>, <code>input</code> (hex-encoded calldata),
+      and <code>value</code>. Cross-reference <code>to</code> against the protocol's documented
+      pool address on Base chainId 8453.
+    </p>
+
+    <div class="note">
+      <p>
+        <strong>Note:</strong> These recipes use a public Base RPC endpoint. You can substitute any
+        Base-compatible RPC URL — your own node, Alchemy, Infura, or any provider — by replacing
+        <code>https://mainnet.base.org</code> with your endpoint URL.
+      </p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>What this confirms</h2>
+    <p>
+      Running these checks confirms that the transaction hash in the manifest corresponds to a real
+      on-chain transaction on Base, and that the amounts in the manifest match the raw calldata.
+      It does not confirm strategy quality, projected returns, or any outcome beyond the on-chain
+      record itself. The operator holds the keys; you can check what was submitted on-chain.
+    </p>
+  </section>
+</BaseLayout>
+
+<style>
+  .verify-head {
+    max-width: var(--entry-max);
+    margin: var(--stack) 0 var(--section-gap-mobile);
+  }
+
+  .eyebrow {
+    font-family: var(--font-body);
+    font-size: var(--type-eyebrow-size);
+    font-weight: var(--label-caps-weight);
+    letter-spacing: var(--type-eyebrow-ls);
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin: 0 0 var(--stack-tight);
+  }
+
+  .verify-head h1 {
+    font-family: var(--font-display);
+    font-size: var(--display-lg-size);
+    font-weight: 500;
+    margin: 0;
+  }
+
+  .lede {
+    font-family: var(--font-body);
+    font-size: var(--body-lg-size);
+    line-height: var(--body-lg-lh);
+    color: var(--ink-secondary);
+    max-width: var(--reading-measure);
+    margin: var(--stack) 0 0;
+  }
+
+  .section {
+    max-width: var(--entry-max);
+    margin: 0 0 var(--section-gap-mobile);
+  }
+
+  .section h2 {
+    font-family: var(--font-display);
+    font-size: var(--type-card-size);
+    font-weight: 500;
+    margin: 0 0 var(--stack);
+  }
+
+  .section h3 {
+    font-family: var(--font-body);
+    font-size: var(--body-lg-size);
+    font-weight: 600;
+    margin: var(--stack) 0 var(--stack-tight);
+    color: var(--ink-secondary);
+  }
+
+  .section p {
+    font-family: var(--font-body);
+    font-size: var(--body-size);
+    line-height: 1.65;
+    color: var(--ink-secondary);
+    max-width: var(--reading-measure);
+    margin: 0 0 var(--stack);
+  }
+
+  .inline-link {
+    color: var(--info);
+  }
+
+  .recipe {
+    background: var(--surface-sunken);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    padding: var(--stack);
+    margin: 0 0 var(--stack);
+    overflow-x: auto;
+    max-width: var(--entry-max);
+  }
+
+  .recipe code {
+    font-family: var(--font-mono);
+    font-size: var(--mono-data-size);
+    color: var(--ink-primary);
+    white-space: pre;
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+    margin: 0 0 var(--stack);
+  }
+
+  .field-table {
+    border-collapse: collapse;
+    width: 100%;
+    font-family: var(--font-body);
+    font-size: var(--body-size);
+  }
+
+  .field-table th {
+    text-align: left;
+    font-weight: 600;
+    color: var(--ink-secondary);
+    padding: var(--stack-tight) var(--stack);
+    border-bottom: 1px solid var(--border-strong);
+    white-space: nowrap;
+  }
+
+  .field-table td {
+    vertical-align: top;
+    padding: var(--stack-tight) var(--stack);
+    border-bottom: 1px solid var(--border-weak, var(--border-strong));
+    color: var(--ink-secondary);
+    line-height: 1.5;
+  }
+
+  .field-table td:first-child,
+  .field-table td:nth-child(2) {
+    white-space: nowrap;
+  }
+
+  .field-table code {
+    font-family: var(--font-mono);
+    font-size: var(--mono-data-size);
+    color: var(--ink-primary);
+  }
+
+  .note {
+    background: var(--surface-sunken);
+    border-left: 3px solid var(--info);
+    padding: var(--stack);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    max-width: var(--reading-measure);
+    margin: 0 0 var(--stack);
+  }
+
+  .note p {
+    margin: 0;
+  }
+</style>
