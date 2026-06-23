@@ -1,10 +1,20 @@
 ---
 // Ledger archive (Story 72.1, AC2) — /ledger/ lists every entry NEWEST-FIRST as
-// a styled list of EntryCard components (not a flat markdown table). Sorted by
+// a styled list of elevated cards (not a flat markdown table). Sorted by
 // frontmatter `date` descending.
+//
+// Redesign (Epic): each row is a `.card-elevated` row carrying a one-line dek
+// (first prose sentence — real entry text, never invented) and a count chip whose
+// number is derived HONESTLY from the entry's own fact-panel signals via the same
+// pure `parseEntrySignals` parser the detail page uses (G1 provenance). When no
+// clean count is derivable (a prose-only Build Log entry has no fact panel → zero
+// signals) the row shows the stream badge + date + dek only — never a fabricated
+// number. The FILTER / AGENT chip controls are polished with contract tokens.
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import EntryCard from '../../components/EntryCard.astro';
+import StreamBadge from '../../components/StreamBadge.astro';
+import { splitEntry } from '../../lib/split-entry';
+import { parseEntrySignals } from '../../lib/parse-entry-signals';
 
 const entries = await getCollection('ledger');
 // Newest-first by date. Ties fall back to the slug (filename) descending, which
@@ -19,6 +29,36 @@ const wallet = sorted[0]?.data.wallet;
 // the collection, plus "All". Entries without an agentSlug (pre-75.5) are grouped under "All"
 // and never hidden; they carry data-agent-entry="unknown".
 const agentSlugs = [...new Set(sorted.map((e) => e.data.agentSlug).filter(Boolean))] as string[];
+
+// Build-time row enrichment — all derived from the entry's OWN committed content.
+// dek  : the first sentence of the editorial prose (real text, trimmed to one line).
+// blocked / flagged : interception counts traced to the deterministic fact panel via
+//   parseEntrySignals (the SAME parser the detail page renders callouts from). We split
+//   the signals by verdict meaning per the color-meaning contract:
+//     - blocked (--intercept, the star): denials + critic ERROR flags — moves the rail stopped.
+//     - flagged (--caution, a warning): oscillation / non-error critic / projected-vs-realized miss.
+//   A prose-only entry (no fact panel) yields zero of both → no count chip is shown.
+const FIRST_SENTENCE = /^[\s\S]*?[.!?](?=\s|$)/;
+function firstSentence(prose: string): string {
+  const flat = prose.replace(/\s+/g, ' ').trim();
+  const m = FIRST_SENTENCE.exec(flat);
+  return (m ? m[0] : flat).trim();
+}
+
+const rows = sorted.map((entry) => {
+  const { prose, fact } = splitEntry(entry.body);
+  const signals = parseEntrySignals(fact);
+  let blocked = 0;
+  let flagged = 0;
+  for (const s of signals) {
+    if (s.kind === 'denial' || (s.kind === 'critic' && s.severity.toLowerCase() === 'error')) {
+      blocked += 1;
+    } else {
+      flagged += 1;
+    }
+  }
+  return { entry, dek: firstSentence(prose), blocked, flagged };
+});
 ---
 
 <BaseLayout title="Ledger — Aegentic" wallet={wallet}>
@@ -32,7 +72,7 @@ const agentSlugs = [...new Set(sorted.map((e) => e.data.agentSlug).filter(Boolea
   </header>
 
   {
-    sorted.length === 0 ? (
+    rows.length === 0 ? (
       <p class="empty">No entries yet.</p>
     ) : (
       <>
@@ -40,22 +80,22 @@ const agentSlugs = [...new Set(sorted.map((e) => e.data.agentSlug).filter(Boolea
             hidden by default and revealed by the inline script; JS-off readers get the
             full interleaved list with no broken UI. `?stream=` is client-side only —
             no server-side filtering, no dynamic [stream].astro route. */}
-        <div data-stream-filter class="stream-filter js-only" hidden>
-          <span class="filter-label">Filter:</span>
-          <button type="button" data-stream-value="all" class="active">All</button>
-          <button type="button" data-stream-value="agent-ledger">Agent Ledger</button>
-          <button type="button" data-stream-value="build-log">Build Log</button>
+        <div data-stream-filter class="chip-filter js-only" hidden>
+          <span class="chip-filter__label">Filter</span>
+          <button type="button" data-stream-value="all" class="filter-chip active">All</button>
+          <button type="button" data-stream-value="agent-ledger" class="filter-chip">Agent Ledger</button>
+          <button type="button" data-stream-value="build-log" class="filter-chip">Build Log</button>
         </div>
 
         {/* Per-agent filter (Story 75.5, AC3) — progressive enhancement, mirrors the stream
             filter. Hidden until the inline script reveals it; JS-off readers get the full list.
             Only rendered when at least one entry carries an agentSlug. */}
         {agentSlugs.length > 0 && (
-          <div data-agent-filter class="stream-filter agent-filter js-only" hidden>
-            <span class="filter-label">Agent:</span>
-            <button type="button" data-agent-value="all" class="active">All</button>
+          <div data-agent-filter class="chip-filter js-only" hidden>
+            <span class="chip-filter__label">Agent</span>
+            <button type="button" data-agent-value="all" class="filter-chip active">All</button>
             {agentSlugs.map((slug) => (
-              <button type="button" data-agent-value={slug}>
+              <button type="button" data-agent-value={slug} class="filter-chip">
                 {slug}
               </button>
             ))}
@@ -63,20 +103,49 @@ const agentSlugs = [...new Set(sorted.map((e) => e.data.agentSlug).filter(Boolea
         )}
 
         <ol class="entry-list">
-          {sorted.map((entry) => (
-            <li
-              data-stream-entry={entry.data.stream}
-              data-agent-entry={entry.data.agentSlug ?? 'unknown'}
-            >
-              <EntryCard
-                title={entry.data.title}
-                date={entry.data.date}
-                stream={entry.data.stream}
-                slug={entry.slug}
-                agentSlug={entry.data.agentSlug}
-              />
-            </li>
-          ))}
+          {rows.map(({ entry, dek, blocked, flagged }) => {
+            const accent =
+              entry.data.stream === 'agent-ledger' ? 'var(--stream-agent)' : 'var(--stream-build)';
+            const displayDate = entry.data.date.includes('T')
+              ? entry.data.date.slice(0, entry.data.date.indexOf('T'))
+              : entry.data.date;
+            return (
+              <li
+                data-stream-entry={entry.data.stream}
+                data-agent-entry={entry.data.agentSlug ?? 'unknown'}
+              >
+                <a
+                  class="entry-row card-elevated"
+                  href={`/ledger/${entry.slug}/`}
+                  style={`--accent: ${accent}`}
+                >
+                  <div class="entry-row__meta">
+                    <StreamBadge stream={entry.data.stream} />
+                    <span class="entry-row__date">{displayDate}</span>
+                    {entry.data.agentSlug && (
+                      <span class="agent-chip">{entry.data.agentSlug}</span>
+                    )}
+                  </div>
+                  <h2 class="entry-row__title">{entry.data.title}</h2>
+                  {dek && <p class="entry-row__dek">{dek}</p>}
+                  {(blocked > 0 || flagged > 0) && (
+                    <div class="entry-row__signals">
+                      {blocked > 0 && (
+                        <span class="chip chip--intercept">
+                          {blocked} blocked
+                        </span>
+                      )}
+                      {flagged > 0 && (
+                        <span class="chip chip--caution">
+                          {flagged} flagged
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </a>
+              </li>
+            );
+          })}
         </ol>
       </>
     )
@@ -147,15 +216,6 @@ const agentSlugs = [...new Set(sorted.map((e) => e.data.agentSlug).filter(Boolea
     margin: var(--stack) 0 var(--section-gap-mobile);
   }
 
-  .eyebrow {
-    font-family: var(--font-body);
-    font-size: var(--label-caps-size);
-    font-weight: var(--label-caps-weight);
-    letter-spacing: var(--label-caps-ls);
-    color: var(--ink-muted);
-    margin: 0 0 var(--stack-tight);
-  }
-
   .archive-head h1 {
     font-family: var(--font-display);
     font-size: var(--display-lg-size);
@@ -177,16 +237,19 @@ const agentSlugs = [...new Set(sorted.map((e) => e.data.agentSlug).filter(Boolea
     padding: 0;
     margin: 0;
     max-width: var(--entry-max);
+    display: flex;
+    flex-direction: column;
+    gap: var(--stack);
   }
 
-  /* Stream filter (72.8) — hidden until the inline script reveals it (the [hidden]
-     attr handles the JS-off case; .js-only is a defensive belt for any path that
-     forgets to set [hidden]). */
-  .stream-filter[hidden] {
+  /* ── Polished FILTER / AGENT chip controls (contract tokens) ──────────────────
+     Hidden until the inline script reveals it (the [hidden] attr handles the JS-off
+     case; .js-only is a defensive belt for any path that forgets to set [hidden]). */
+  .chip-filter[hidden] {
     display: none;
   }
 
-  .stream-filter {
+  .chip-filter {
     display: flex;
     align-items: center;
     gap: var(--stack-tight);
@@ -195,36 +258,111 @@ const agentSlugs = [...new Set(sorted.map((e) => e.data.agentSlug).filter(Boolea
     margin: 0 0 var(--stack);
   }
 
-  .stream-filter .filter-label {
+  .chip-filter__label {
     font-family: var(--font-body);
-    font-size: var(--label-caps-size);
+    font-size: var(--type-eyebrow-size);
     font-weight: var(--label-caps-weight);
-    letter-spacing: var(--label-caps-ls);
+    letter-spacing: var(--type-eyebrow-ls);
     text-transform: uppercase;
     color: var(--ink-muted);
     margin-right: var(--stack-tight);
   }
 
-  .stream-filter button {
+  .filter-chip {
     font-family: var(--font-body);
     font-size: var(--body-sm-size);
     color: var(--ink-secondary);
-    background: transparent;
-    border: 1px solid var(--hairline);
-    border-radius: var(--radius-sm);
-    padding: 4px 10px;
-    cursor: pointer;
-  }
-
-  .stream-filter button:hover {
-    border-color: var(--hairline-strong);
-    color: var(--ink-primary);
-  }
-
-  .stream-filter button.active {
-    color: var(--ink-primary);
-    border-color: var(--hairline-strong);
     background: var(--surface-raised);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-full);
+    padding: 4px 12px;
+    cursor: pointer;
+    transition:
+      color 0.16s ease,
+      border-color 0.16s ease,
+      background 0.16s ease;
+  }
+
+  .filter-chip:hover {
+    border-color: var(--border-strong);
+    color: var(--ink-primary);
+  }
+
+  .filter-chip.active {
+    color: var(--ink-on-accent);
+    border-color: var(--brand);
+    background: var(--brand);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .filter-chip {
+      transition: none;
+    }
+  }
+
+  /* ── Archive row (elevated card) ─────────────────────────────────────────────
+     .card-elevated supplies the surface/border/shadow + hover lift from the
+     contract; the local rules add the stream-tinted left rail + inner layout. */
+  .entry-row {
+    display: block;
+    position: relative;
+    border-left: 3px solid var(--accent);
+    padding: var(--stack);
+    text-decoration: none;
+  }
+
+  .entry-row:hover {
+    text-decoration: none;
+  }
+
+  .entry-row__meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--gutter);
+    margin-bottom: var(--stack-tight);
+  }
+
+  .entry-row__date {
+    font-family: var(--font-body);
+    font-size: var(--body-sm-size);
+    color: var(--ink-muted);
+  }
+
+  .agent-chip {
+    font-family: var(--font-mono);
+    font-size: var(--body-sm-size);
+    color: var(--ink-muted);
+  }
+
+  .entry-row__title {
+    font-family: var(--font-display);
+    font-size: var(--type-card-size);
+    line-height: var(--type-card-lh);
+    font-weight: 500;
+    color: var(--ink-primary);
+    margin: 0;
+  }
+
+  .entry-row__dek {
+    font-family: var(--font-body);
+    font-size: var(--body-size);
+    line-height: 1.5;
+    color: var(--ink-secondary);
+    margin: var(--stack-tight) 0 0;
+    /* one line: clamp to a single line at the row scale */
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .entry-row__signals {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--stack-tight);
+    margin-top: var(--stack);
   }
 
   .empty {

@@ -19,8 +19,17 @@ const { agentName, cyclesSupervised, selfCustodiedCapital, drained, href } = Ast
 const capital = selfCustodiedCapital !== null ? selfCustodiedCapital.formatted : '$—';
 ---
 
-<a class="agent-card" href={href}>
+<a class="card-elevated agent-card" href={href}>
   <span class="agent-name">{agentName}</span>
+
+  <!-- The safety pair leads: "drained to date" sits in its own sunken well above the
+       capital/cycles figures so the safety reading is louder than capital/yield. "0 drained"
+       stays NEUTRAL ink — never green, never a chip tint (locked color-meaning rule). -->
+  <div class="safety-figure">
+    <span class="value mono safety-value">{drained}</span>
+    <span class="label">drained <span class="scope">to date</span></span>
+  </div>
+
   <div class="figures">
     <div class="figure">
       <span class="value mono">{capital}</span>
@@ -30,42 +39,58 @@ const capital = selfCustodiedCapital !== null ? selfCustodiedCapital.formatted :
       <span class="value mono">{cyclesSupervised}</span>
       <span class="label">cycles supervised</span>
     </div>
-    <div class="figure">
-      <span class="value mono">{drained}</span>
-      <span class="label">drained <span class="scope">to date</span></span>
-    </div>
   </div>
+
   <span class="journey">VIEW JOURNEY →</span>
 </a>
 
 <style>
+  /* Surface, border, shadow + hover lift come from the global .card-elevated.
+     Scoped CSS only adds layout, the safety-first figure grouping, and the type hierarchy. */
   .agent-card {
     display: flex;
     flex-direction: column;
     gap: var(--stack);
-    background: var(--surface-raised);
-    border: 1px solid var(--hairline);
-    border-radius: var(--radius-md);
     padding: var(--stack);
     text-decoration: none;
   }
 
   .agent-card:hover {
-    border-color: var(--hairline-strong);
     text-decoration: none;
   }
 
+  /* Agent name → the 20px Newsreader card-title step (distinct from hero/section heads). */
   .agent-name {
     font-family: var(--font-display);
-    font-size: var(--headline-sm-size);
+    font-size: var(--type-card-size);
+    line-height: var(--type-card-lh);
     font-weight: 500;
     color: var(--ink-primary);
+  }
+
+  /* The dominant safety figure — recessed well, larger value, but NEUTRAL ink. */
+  .safety-figure {
+    display: flex;
+    flex-direction: column;
+    gap: var(--stack-tight);
+    padding: var(--stack-tight) var(--stack);
+    background: var(--surface-sunken);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius);
+  }
+
+  .safety-value {
+    font-size: var(--mono-data-lg-size);
+    font-weight: var(--mono-data-lg-weight);
   }
 
   .figures {
     display: flex;
     flex-wrap: wrap;
     gap: var(--gutter);
+    /* hairline divider sets the secondary capital/cycles pair below the safety lead */
+    padding-top: var(--stack);
+    border-top: 1px solid var(--border-subtle);
   }
 
   .figure {
@@ -74,10 +99,11 @@ const capital = selfCustodiedCapital !== null ? selfCustodiedCapital.formatted :
     gap: var(--stack-tight);
   }
 
+  /* Capital/cycles read at a quieter scale than the safety figure (mono-data, not -lg). */
   .value {
     font-family: var(--font-mono);
-    font-size: var(--mono-data-lg-size);
-    font-weight: var(--mono-data-lg-weight);
+    font-size: var(--mono-data-size);
+    font-weight: var(--mono-data-weight);
     color: var(--ink-primary);
   }
 

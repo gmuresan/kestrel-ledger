@@ -1,0 +1,59 @@
+---
+// CycleTape (design-system contract — the signature data visual) — a horizontal
+// strip of small marks: quiet proceed marks + red intercept marks. Glanceable,
+// count-honest proof. Pure CSS / SSR — ZERO client JS.
+//
+// Honesty rules (LOCKED):
+//  - Count-honest: `total` / `intercepted` trace to src/data/state.json
+//    (currently total 36, intercepted 2). Introduce no other numbers.
+//  - The caption is AGGREGATE-only and TIMELINE-free — we have counts, not
+//    per-cycle order. No dates, no "latest", no "in a row", no implied sequence.
+//    Mark ordering in the DOM is presentational only, never chronological.
+//  - --mark-intercept (red) is the star; --mark-proceed (quiet green) recedes.
+//  - Accessibility: the strip is one role="img" with an aria-label equal to the
+//    caption, so the individual marks aren't announced one by one.
+interface Props {
+  total: number;
+  intercepted: number;
+  label?: string;
+}
+const { total, intercepted, label } = Astro.props;
+
+// Guard: clamp intercepted into [0, total]; render nothing meaningful if total <= 0.
+const markCount = Math.max(0, Math.floor(total));
+const interceptCount = Math.min(Math.max(0, Math.floor(intercepted)), markCount);
+const proceedCount = markCount - interceptCount;
+
+// Aggregate-only, timeline-free caption (default). Ordering of marks is presentational.
+const caption = label ?? `${interceptCount} of ${markCount} cycles intercepted by the rail`;
+
+// Build the mark list as a count, not a sequence: quiet proceed marks, then the
+// red intercept marks. DOM order is layout only — the caption carries the meaning.
+const marks: ('proceed' | 'intercept')[] = [
+  ...Array.from({ length: proceedCount }, () => 'proceed' as const),
+  ...Array.from({ length: interceptCount }, () => 'intercept' as const),
+];
+---
+
+{
+  markCount > 0 && (
+    <figure class="cycle-tape-wrap">
+      <div class="cycle-tape" role="img" aria-label={caption}>
+        {marks.map((kind) => (
+          <span
+            class:list={['cycle-tape__mark', kind === 'intercept' && 'cycle-tape__mark--intercept']}
+            aria-hidden="true"
+          />
+        ))}
+      </div>
+      <figcaption class="cycle-tape__caption">{caption}</figcaption>
+    </figure>
+  )
+}
+
+<style>
+  /* Layout-only wrapper; the visual tokens + .cycle-tape* classes live in tokens.css. */
+  .cycle-tape-wrap {
+    margin: 0;
+  }
+</style>

@@ -5,51 +5,68 @@
 //
 // Microcopy rule (DESIGN.md do/don't): say "self-custodied by the operator" —
 // never "trustless" or "non-custodial" for the overseer.
+//
+// Defaults come from src/lib/site.ts so the REAL wallet + explorer link render on
+// EVERY route — including /about, /waitlist, /ledger — instead of the placeholder.
+// A page may still override by passing explicit props (e.g. a per-entry wallet).
+import { WALLET, WALLET_EXPLORER_URL, EXPLORER_NAME } from '../lib/site';
+
 interface Props {
   wallet?: string;
   explorerUrl?: string;
   explorerName?: string;
 }
-const { wallet, explorerUrl, explorerName } = Astro.props;
+const {
+  wallet = WALLET,
+  explorerUrl = WALLET_EXPLORER_URL,
+  explorerName = EXPLORER_NAME,
+} = Astro.props;
 const linkLabel = explorerName ? `↗ ${explorerName}` : '↗ view on the block explorer';
 ---
 
 <footer class="footer-verify">
-  <p class="label">VERIFY ON CHAIN</p>
-  {
-    wallet ? (
-      <p class="wallet">
-        <span class="address mono">{wallet}</span>
-        {explorerUrl && (
+  <div class="footer-inner">
+    <p class="label">VERIFY ON CHAIN</p>
+    <p class="wallet">
+      <span class="address mono">{wallet}</span>
+      {
+        explorerUrl && (
           <a class="explorer" href={explorerUrl} rel="noopener noreferrer" target="_blank">
             {linkLabel}
           </a>
-        )}
-      </p>
-    ) : (
-      <p class="wallet"><span class="address mono">(wallet published with the first entry)</span></p>
-    )
-  }
-  <p class="disclosure">
-    This is a self-custodied record: the operator holds the keys and publishes what the
-    supervised agent did, with on-chain receipts you can check yourself. It is not a promise
-    of any outcome.
-  </p>
+        )
+      }
+    </p>
+    <p class="disclosure">
+      This is a self-custodied record: the operator holds the keys and publishes what the
+      supervised agent did, with on-chain receipts you can check yourself. It is not a promise
+      of any outcome.
+    </p>
+  </div>
 </footer>
 
 <style>
+  /* Trust anchor: the recessed verify well (surface-sunken) capped by a strong
+     top divider so it reads as a distinct foot of the page. Inner content is held
+     to --content-max so it lines up with the nav + main column above it. */
   .footer-verify {
     background: var(--surface-sunken);
-    border-top: 1px solid var(--hairline-strong);
+    border-top: 1px solid var(--border-strong);
     margin-top: var(--section-gap-mobile);
-    padding: var(--stack) var(--margin-mobile);
+    padding: var(--gutter) var(--margin-mobile);
+  }
+
+  .footer-inner {
+    max-width: var(--content-max);
+    margin: 0 auto;
   }
 
   .label {
     font-family: var(--font-body);
-    font-size: var(--label-caps-size);
+    font-size: var(--type-eyebrow-size);
     font-weight: var(--label-caps-weight);
-    letter-spacing: var(--label-caps-ls);
+    letter-spacing: var(--type-eyebrow-ls);
+    text-transform: uppercase;
     color: var(--ink-muted);
     margin: 0 0 var(--stack-tight);
   }

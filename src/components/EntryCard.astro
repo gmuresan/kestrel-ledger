@@ -19,30 +19,31 @@ const accent = stream === 'agent-ledger' ? 'var(--stream-agent)' : 'var(--stream
 const displayDate = date.includes('T') ? date.slice(0, date.indexOf('T')) : date;
 ---
 
-<a class="entry-card" href={`/ledger/${slug}/`} style={`--accent: ${accent}`}>
+<a class="card-elevated entry-card" href={`/ledger/${slug}/`} style={`--accent: ${accent}`}>
   <div class="meta">
     <StreamBadge stream={stream} />
     <span class="date">{displayDate}</span>
+    {agentSlug && <span class="agent-chip">{agentSlug}</span>}
   </div>
-  {agentSlug && <span class="agent-chip">{agentSlug}</span>}
   <h2 class="title">{title}</h2>
 </a>
 
 <style>
+  /* Surface, border, shadow + hover lift come from the global .card-elevated.
+     Scoped CSS only adds the per-stream left accent bar, layout, and the card-title
+     hierarchy (--type-card-*). */
   .entry-card {
     display: block;
     position: relative;
-    background: var(--surface-raised);
-    border: 1px solid var(--hairline);
+    /* The stream-tinted accent edge overrides .card-elevated's left border. */
     border-left: 3px solid var(--accent);
-    border-radius: var(--radius-md);
     padding: var(--stack);
     margin: var(--stack) 0;
     text-decoration: none;
   }
 
+  /* Keep the stream accent on the left even when .card-elevated:hover restyles the border. */
   .entry-card:hover {
-    border-color: var(--hairline-strong);
     border-left-color: var(--accent);
     text-decoration: none;
   }
@@ -50,28 +51,36 @@ const displayDate = date.includes('T') ? date.slice(0, date.indexOf('T')) : date
   .meta {
     display: flex;
     align-items: center;
-    gap: var(--gutter);
+    flex-wrap: wrap;
+    gap: var(--stack-tight) var(--gutter);
     margin-bottom: var(--stack-tight);
   }
 
   .date {
-    font-family: var(--font-body);
-    font-size: var(--body-sm-size);
-    color: var(--ink-muted);
-  }
-
-  /* Per-agent attribution chip (75.5, AC3) — same scale as the date, muted, no decoration. */
-  .agent-chip {
-    display: inline-block;
     font-family: var(--font-mono);
-    font-size: var(--body-sm-size);
+    font-size: var(--mono-sm-size);
     color: var(--ink-muted);
-    margin-bottom: var(--stack-tight);
   }
 
+  /* Per-agent attribution chip (75.5, AC3) — neutral pill, mono, no decoration.
+     Reuses the global .chip token treatment via local scoped styling to stay light. */
+  .agent-chip {
+    display: inline-flex;
+    align-items: center;
+    font-family: var(--font-mono);
+    font-size: var(--mono-sm-size);
+    color: var(--ink-secondary);
+    padding: 2px 8px;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-full);
+    background: var(--surface-overlay);
+  }
+
+  /* Card title — the named 20px Newsreader card step, distinct from hero/section heads. */
   .title {
     font-family: var(--font-display);
-    font-size: var(--headline-sm-size);
+    font-size: var(--type-card-size);
+    line-height: var(--type-card-lh);
     font-weight: 500;
     color: var(--ink-primary);
     margin: 0;

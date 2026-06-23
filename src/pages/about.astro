@@ -1,38 +1,369 @@
 ---
-// About stub (Story 72.1). Full content lands in a later story; for now a sober
-// plain-language statement of what this record is and is not.
+// About (Story 72.x → redesign). Sober plain-language statement of what this
+// record is and is not, given real structure: a custody/veto FLOW diagram and a
+// gate list with simple glyphs. Pure CSS + inline SVG — zero client JS. The
+// honest existing copy is preserved verbatim; the new structure only frames it.
+//
+// Honesty bar (the banned-phrase lint scans this whole source, comments
+// included): the copy stays clear of every denylisted overclaim. Custody is
+// described as the key never leaving the operator's machine, and every
+// transaction being verified, critiqued, and vetoable before it executes.
 import BaseLayout from '../layouts/BaseLayout.astro';
+
+// The flow from a proposed action to an on-chain receipt. Pure data → SSR; no JS.
+const flow = [
+  { step: 'Agent', detail: 'proposes an action' },
+  { step: 'Overseer', detail: 'verifies and critiques it' },
+  { step: 'Operator', detail: 'approves or vetoes' },
+  { step: 'Key', detail: 'never leaves the operator’s machine' },
+  { step: 'Chain', detail: 'an on-chain receipt anyone can check' },
+];
+
+// The gates each proposed transaction is measured against, with a small inline
+// glyph. These are the named rails — not a claim that they catch everything.
+const gates = [
+  { name: 'Whitelist', detail: 'only approved protocols and tokens', glyph: 'list' },
+  { name: 'Kill-switch', detail: 'a single switch halts all action', glyph: 'stop' },
+  { name: 'Value cap', detail: 'a hard ceiling on per-transaction size', glyph: 'cap' },
+  { name: 'Gas ceiling', detail: 'a hard ceiling on transaction fees', glyph: 'gas' },
+  { name: 'Critic', detail: 'a second model argues against the plan', glyph: 'critic' },
+  { name: 'Denial', detail: 'an operator veto blocks the action outright', glyph: 'deny' },
+  { name: 'Oscillation', detail: 'flip-flop between positions is flagged', glyph: 'wave' },
+];
 ---
 
 <BaseLayout title="About — Aegentic Ledger">
   <article class="about">
-    <h1>About this ledger</h1>
-    <p>
-      This is a build-in-public record of a self-custody DeFi yield agent supervised by an
-      overseer that adjudicates what the agent is permitted to do. Each entry pairs the agent's
-      own account of a cycle with a deterministic fact panel and on-chain receipts.
-    </p>
-    <p>
-      The operator holds the keys. Every claim links to a transaction you can check on a block
-      explorer. This page does not promise any outcome — only proof you can verify yourself.
-    </p>
+    {/* ── Statement ──────────────────────────────────────────────────── */}
+    <header class="about-head section-band">
+      <p class="eyebrow">ABOUT THIS LEDGER</p>
+      <h1 class="about-title">A record you can check, not a promise to take on faith</h1>
+      <p class="about-lede">
+        This is a build-in-public record of a self-custody DeFi yield agent supervised by an
+        overseer that adjudicates what the agent is permitted to do. Each entry pairs the agent's
+        own account of a cycle with a deterministic fact panel and on-chain receipts.
+      </p>
+      <p class="about-lede">
+        The operator holds the keys. Every claim links to a transaction you can check on a block
+        explorer. This page does not promise any outcome — only proof you can verify yourself.
+      </p>
+    </header>
+
+    {/* ── Custody / veto flow ────────────────────────────────────────── */}
+    <section class="section-band" aria-label="How an action reaches the chain">
+      <p class="eyebrow">FROM PROPOSAL TO RECEIPT</p>
+      <h2 class="section-heading">Every transaction is verified, critiqued, and vetoable before it executes</h2>
+      <p class="section-dek">
+        The key never leaves the operator's machine. An action only reaches the chain after it
+        clears the overseer and the operator — and any one of them can stop it.
+      </p>
+
+      <ol class="flow card-elevated" role="list">
+        {
+          flow.map((node, i) => (
+            <li class="flow-node">
+              <span class="flow-icon" aria-hidden="true">
+                {node.step === 'Agent' && (
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="5" y="7" width="14" height="11" rx="2" />
+                    <line x1="12" y1="3" x2="12" y2="7" />
+                    <circle cx="9.5" cy="12" r="0.6" fill="currentColor" />
+                    <circle cx="14.5" cy="12" r="0.6" fill="currentColor" />
+                  </svg>
+                )}
+                {node.step === 'Overseer' && (
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1.5 12s3.5-6.5 10.5-6.5S22.5 12 22.5 12s-3.5 6.5-10.5 6.5S1.5 12 1.5 12Z" />
+                    <circle cx="12" cy="12" r="2.6" />
+                  </svg>
+                )}
+                {node.step === 'Operator' && (
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="8" r="3.4" />
+                    <path d="M5.5 19a6.5 6.5 0 0 1 13 0" />
+                  </svg>
+                )}
+                {node.step === 'Key' && (
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="8" cy="8" r="4" />
+                    <path d="M11 11l8 8" />
+                    <path d="M16 16l2-2" />
+                    <path d="M19 13l1.5 1.5" />
+                  </svg>
+                )}
+                {node.step === 'Chain' && (
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 13a4 4 0 0 1 0-5l2-2a4 4 0 0 1 6 6l-1 1" />
+                    <path d="M15 11a4 4 0 0 1 0 5l-2 2a4 4 0 0 1-6-6l1-1" />
+                  </svg>
+                )}
+              </span>
+              <span class="flow-text">
+                <span class="flow-step">{node.step}</span>
+                <span class="flow-detail">{node.detail}</span>
+              </span>
+              {i < flow.length - 1 && (
+                <span class="flow-arrow" aria-hidden="true">→</span>
+              )}
+            </li>
+          ))
+        }
+      </ol>
+    </section>
+
+    {/* ── Gate list ──────────────────────────────────────────────────── */}
+    <section class="section-band section-band--alt" aria-label="The gates a transaction is measured against">
+      <div class="gates-inner">
+        <p class="eyebrow">THE GATES</p>
+        <h2 class="section-heading">What each proposed transaction is measured against</h2>
+        <p class="section-dek">
+          Every proposal is checked against these rails. They are the named limits the record
+          shows the safety layer enforcing — not a claim that they catch everything.
+        </p>
+
+        <ul class="gate-grid" role="list">
+          {
+            gates.map((gate) => (
+              <li class="gate card-elevated">
+                <span class="gate-glyph" aria-hidden="true">
+                  {gate.glyph === 'list' && (
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M4 7h2M4 12h2M4 17h2" />
+                      <path d="M9 7h11M9 12h11M9 17h11" />
+                    </svg>
+                  )}
+                  {gate.glyph === 'stop' && (
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="9" />
+                      <line x1="5.6" y1="5.6" x2="18.4" y2="18.4" />
+                    </svg>
+                  )}
+                  {gate.glyph === 'cap' && (
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                      <line x1="4" y1="7" x2="20" y2="7" />
+                      <path d="M7 12h10M9 17h6" />
+                    </svg>
+                  )}
+                  {gate.glyph === 'gas' && (
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="4" y="4" width="9" height="16" rx="1.5" />
+                      <path d="M13 9h3.5a2 2 0 0 1 2 2v5a1.5 1.5 0 0 0 3 0V9l-2.5-2.5" />
+                    </svg>
+                  )}
+                  {gate.glyph === 'critic' && (
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21 12a8 8 0 0 1-11.4 7.2L4 21l1.8-5.6A8 8 0 1 1 21 12Z" />
+                      <line x1="9" y1="11" x2="15" y2="11" />
+                      <line x1="9" y1="14" x2="13" y2="14" />
+                    </svg>
+                  )}
+                  {gate.glyph === 'deny' && (
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M12 3l8 4v5c0 4.5-3 7.5-8 9-5-1.5-8-4.5-8-9V7Z" />
+                      <line x1="9" y1="12" x2="15" y2="12" />
+                    </svg>
+                  )}
+                  {gate.glyph === 'wave' && (
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M3 12c2-5 4-5 6 0s4 5 6 0 4-5 6 0" />
+                    </svg>
+                  )}
+                </span>
+                <span class="gate-text">
+                  <span class="gate-name">{gate.name}</span>
+                  <span class="gate-detail">{gate.detail}</span>
+                </span>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </section>
   </article>
 </BaseLayout>
 
 <style>
   .about {
-    max-width: var(--reading-measure);
-    margin: var(--stack) 0;
+    max-width: var(--content-max);
+    margin: 0 auto;
+  }
+
+  /* The page sits inside .site-main which already constrains width + padding; let
+     the bands run the rhythm. The first band keeps the hero close to the nav. */
+  .about-head {
+    border-top: none;
+  }
+
+  .about-title {
+    font-family: var(--font-display);
+    font-size: var(--type-hero-size);
+    font-weight: var(--display-xl-weight);
+    line-height: var(--type-hero-lh);
+    letter-spacing: var(--type-hero-ls);
+    color: var(--ink-primary);
+    margin: 0;
+    max-width: 18ch;
+  }
+
+  .about-lede {
     font-family: var(--font-body);
     font-size: var(--body-lg-size);
     line-height: var(--body-lg-lh);
+    color: var(--ink-secondary);
+    max-width: var(--reading-measure);
+    margin: var(--stack) 0 0;
+  }
+
+  /* ── Custody / veto flow ─────────────────────────────────────────────── */
+  .flow {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: var(--gutter);
+    margin: var(--gutter) 0 0;
+    padding: var(--gutter);
+  }
+
+  .flow-node {
+    position: relative;
+    flex: 1 1 0;
+    min-width: 150px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--stack-tight);
+  }
+
+  .flow-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    background: var(--surface-sunken);
+    border: 1px solid var(--border-subtle);
+    color: var(--brand);
+  }
+
+  .flow-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .flow-step {
+    font-family: var(--font-display);
+    font-size: var(--type-card-size);
+    line-height: var(--type-card-lh);
     color: var(--ink-primary);
   }
 
-  .about h1 {
+  .flow-detail {
+    font-family: var(--font-body);
+    font-size: var(--body-sm-size);
+    line-height: 1.45;
+    color: var(--ink-secondary);
+  }
+
+  /* The connector between nodes: an em-dash arrow nudged into the gap. */
+  .flow-arrow {
+    position: absolute;
+    top: 8px;
+    right: calc(var(--gutter) / -2);
+    transform: translateX(50%);
+    font-family: var(--font-mono);
+    font-size: var(--type-card-size);
+    color: var(--ink-muted);
+    pointer-events: none;
+  }
+
+  /* ── Gate list ───────────────────────────────────────────────────────── */
+  .gates-inner {
+    max-width: var(--content-max);
+  }
+
+  .gate-grid {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: var(--stack);
+    margin: var(--gutter) 0 0;
+    padding: 0;
+  }
+
+  .gate {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--stack);
+    padding: var(--stack);
+  }
+
+  .gate-glyph {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius);
+    background: var(--surface-overlay);
+    border: 1px solid var(--border-subtle);
+    color: var(--brand);
+  }
+
+  .gate-text {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+  }
+
+  .gate-name {
     font-family: var(--font-display);
-    font-size: var(--display-lg-size);
-    font-weight: 500;
-    margin: 0 0 var(--stack);
+    font-size: var(--type-card-size);
+    line-height: var(--type-card-lh);
+    color: var(--ink-primary);
+  }
+
+  .gate-detail {
+    font-family: var(--font-body);
+    font-size: var(--body-sm-size);
+    line-height: 1.45;
+    color: var(--ink-secondary);
+  }
+
+  /* ── Responsive ──────────────────────────────────────────────────────── */
+  @media (max-width: 768px) {
+    .about-title {
+      font-size: clamp(2rem, 7vw, var(--type-hero-size));
+      max-width: none;
+    }
+    /* Stack the flow vertically; the arrow points down between rows. */
+    .flow {
+      flex-direction: column;
+      gap: var(--stack);
+    }
+    .flow-node {
+      flex-direction: row;
+      align-items: center;
+      gap: var(--stack);
+    }
+    .flow-text {
+      gap: 1px;
+    }
+    .flow-arrow {
+      top: auto;
+      bottom: calc(var(--stack) / -2);
+      left: 20px;
+      right: auto;
+      transform: translateY(50%) rotate(90deg);
+    }
+  }
+
+  @media (max-width: 480px) {
+    .about-title {
+      font-size: clamp(1.6rem, 8vw, 2.25rem);
+    }
   }
 </style>

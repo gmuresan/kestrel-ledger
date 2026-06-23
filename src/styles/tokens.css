@@ -1,42 +1,64 @@
 /*
- * Aegentic Ledger design tokens (Story 72.1, AC3).
+ * Aegentic Ledger design tokens + global utility classes.
  *
- * Full token spec:
- *   _bmad-output/planning-artifacts/ux-designs/ux-crypto-agent-observability-2026-06-15/DESIGN.md
+ * SINGLE SOURCE of the redesign's visual system. Imported once, globally, by
+ * BaseLayout.astro. Component files consume the custom properties and utility
+ * classes defined here so per-component CSS stays minimal and coherent.
  *
- * Dark-primary only — no prefers-color-scheme branching yet (light-mode stubs are
- * carried in DESIGN.md but deliberately not implemented here).
+ * Brand direction (unchanged): editorial publication — Newsreader serif on deep
+ * cool navy, rationed brass/amber accent. The redesign adds CRAFT, not a new
+ * brand: real depth (visible card elevation), explicit hierarchy (a type scale
+ * that separates hero / section-head / card-title / body), section rhythm, and
+ * one signature data visual (the cycle tape). Everything here is pure CSS — zero
+ * client JS (the site ships no script; hover/frame/tape are all CSS/SSR).
  *
- * WCAG 2.2 AA: contrast audit completed in Story 72.3. Every text token was checked
- * against its background (≥ 4.5:1 normal text). All spec pairs passed as-authored
- * (brass --brand on base = 8.0:1, amber --caution on caution-wash = 8.2:1, --intercept
- * on intercept-wash = 4.7:1, --stream-build on base = 6.5:1, --ink-secondary = 7.8:1).
- * Only --ink-muted failed (3.53:1) where it backs body-sm disclosure text, and was
- * lightened to the minimum passing value (see the token below).
+ * Color-meaning contract (LOCKED — do not repurpose):
+ *   --intercept (red)  = THE star color. "the rail caught it." Lead with it.
+ *   --proceed   (green)= deliberately QUIET. executed/approved. never a victory lap.
+ *   --caution   (amber)= a WARNING — critic flag / oscillation / projected-vs-realized miss.
+ *   "0 drained" and the drained metric ALWAYS render in NEUTRAL ink (--ink-primary),
+ *   never green, never a celebratory color.
+ *
+ * Dark-primary only — no prefers-color-scheme branching yet.
+ *
+ * WCAG 2.2 AA: every text token is checked against its surface (>= 4.5:1 normal text).
+ * --ink-muted was raised from #707d92 (4.345:1 on --surface-raised — BELOW AA) to
+ * #8591a3, which now passes on every surface level: base 6.05:1, raised 5.67:1,
+ * overlay 5.34:1. All other spec pairs pass as-authored.
  */
 
 :root {
-  /* ── Surface ramp (cool near-black; never pure black) ── */
-  --surface-base: #0b0e14;       /* page background — deepest */
-  --surface-raised: #111620;     /* cards, sections lifted off base */
-  --surface-overlay: #161c28;    /* popovers, sticky bars, hover-lifted cards */
+  /* ───────────────────────── Surface ramp (cool near-black; never pure black) ───────── */
+  /* Three primary elevation levels (base < raised < overlay) plus two special wells. */
+  --surface-base: #0b0e14;       /* page background — deepest, the canvas */
+  --surface-raised: #111620;     /* cards, sections lifted off base (elevation 1) */
+  --surface-overlay: #171e2b;    /* hover-lifted cards, sticky bars, exhibit chrome (elevation 2) */
   --surface-sunken: #080a0f;     /* the fact-panel well (recessed from prose) */
   --surface-ledger: #0d1118;     /* receipt-row strip (the monospace zone) */
-  --hairline: #1e2633;           /* 1px structural rule, ghost border */
-  --hairline-strong: #2a3342;    /* divider that must be seen (fact-wall edge) */
 
-  /* ── Ink ── */
+  /* ── Borders (paired with the surface ramp so cards read as cards) ── */
+  --hairline: #1e2633;           /* legacy alias — 1px structural rule, ghost border */
+  --hairline-strong: #2a3342;    /* legacy alias — divider that must be seen */
+  --border-subtle: #232c3b;      /* default card edge — visible against base+raised */
+  --border-strong: #33405380;    /* emphasized edge / hover border / exhibit frame */
+
+  /* ── Shadows (depth that lifts cards + frames the exhibit) ── */
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.30), 0 6px 16px -6px rgb(0 0 0 / 0.45);
+  --shadow-card-hover: 0 2px 4px rgb(0 0 0 / 0.35), 0 14px 32px -10px rgb(0 0 0 / 0.55);
+  --shadow-exhibit: 0 4px 10px rgb(0 0 0 / 0.40), 0 30px 60px -20px rgb(0 0 0 / 0.65);
+
+  /* ───────────────────────── Ink ───────────────────────── */
   --ink-primary: #e8ecf2;        /* primary reading text on dark */
   --ink-secondary: #9aa6b8;      /* captions, metadata, deemphasized prose */
-  --ink-muted: #707d92;          /* timestamps, labels, "less than" data; was #5e6a7d, lightened for WCAG 2.2 AA (3.53:1 → 4.63:1 on --surface-base) */
+  --ink-muted: #8591a3;          /* timestamps, labels, "less than" data; raised from #707d92 for WCAG 2.2 AA (now 5.67:1 on --surface-raised) */
   --ink-on-accent: #0b0e14;      /* text on a filled accent (verdict/CTA) */
 
-  /* ── Brand: the seal (rationed; authority/CTA/agent-stream only) ── */
+  /* ───────────────────────── Brand: the seal (rationed; authority/CTA/agent-stream) ─── */
   --brand: #c8a24b;
   --brand-dim: #8a6f33;
   --brand-wash: #1a160c;
 
-  /* ── Verdict palette (color carries meaning, never mood) ── */
+  /* ───────────────────────── Verdict palette (color carries meaning, never mood) ────── */
   --intercept: #e5484d;          /* THE star color — "the rail caught it" */
   --intercept-wash: #1f1012;
   --intercept-edge: #5b2326;
@@ -49,24 +71,31 @@
   --info: #4a8fe7;               /* explorer links, verify affordances */
   --info-wash: #0c141f;
 
-  /* ── Stream identity ── */
+  /* ── Cycle-tape marks (the signature visual) ── */
+  --mark-proceed: #2f5a48;       /* a QUIET green — a proceed mark recedes into the tape */
+  --mark-intercept: var(--intercept);   /* a red mark — the one the eye should find */
+  --mark-size: 9px;              /* base mark side */
+  --mark-gap: 4px;               /* gap between marks */
+  --mark-radius: 1.5px;
+
+  /* ───────────────────────── Stream identity ───────────────────────── */
   --stream-agent: #c8a24b;       /* Agent Ledger == brand brass */
   --stream-build: #7a8cff;       /* Build Log == periwinkle (never a verdict) */
   --stream-build-wash: #10131f;
 
-  /* ── Typography families ── */
+  /* ───────────────────────── Typography families ───────────────────────── */
   --font-display: 'Newsreader', Georgia, serif;
   --font-body: 'Inter', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
 
-  /* ── Type scale (size / weight / line-height / tracking) ── */
-  --display-xl-size: 56px;
+  /* ───────────────────────── Type scale (legacy primitives — keep) ───────────────────── */
+  --display-xl-size: 56px;       /* HERO headline */
   --display-xl-weight: 500;
   --display-xl-lh: 1.06;
   --display-xl-ls: -0.02em;
   --display-lg-size: 36px;
-  --headline-size: 28px;
-  --headline-sm-size: 20px;
+  --headline-size: 28px;         /* SECTION head */
+  --headline-sm-size: 20px;      /* CARD title */
   --body-lg-size: 18px;
   --body-lg-lh: 1.62;
   --body-size: 16px;
@@ -81,13 +110,35 @@
   --mono-data-lg-weight: 600;
   --mono-sm-size: 12.5px;
 
-  /* ── Radius ── */
+  /* ── Named type-scale steps (the hierarchy contract — use these names) ── */
+  /* hero  : the 56px Newsreader headline (one per page, the masthead).        */
+  /* section-head : 28px Newsreader — clearly smaller than hero, larger than card. */
+  /* card-title  : 20px Newsreader — the EntryCard / panel title.              */
+  /* body  : 16px Inter — running prose.                                       */
+  /* eyebrow : 12px Inter caps, amber — the kicker above a section head.       */
+  /* mono  : 14px JetBrains — on-chain / deterministic data.                   */
+  --type-hero-size: var(--display-xl-size);
+  --type-hero-lh: var(--display-xl-lh);
+  --type-hero-ls: var(--display-xl-ls);
+  --type-section-size: var(--headline-size);
+  --type-section-lh: 1.18;
+  --type-section-ls: -0.01em;
+  --type-card-size: var(--headline-sm-size);
+  --type-card-lh: 1.3;
+  --type-body-size: var(--body-size);
+  --type-body-lh: var(--body-lh);
+  --type-eyebrow-size: var(--label-caps-size);
+  --type-eyebrow-ls: var(--label-caps-ls);
+  --type-mono-size: var(--mono-data-size);
+
+  /* ───────────────────────── Radius ───────────────────────── */
   --radius-sm: 3px;              /* tags, badges, inline chips */
   --radius: 6px;                 /* buttons, receipt rows, inputs */
   --radius-md: 8px;              /* cards, callouts, fact panel */
-  --radius-lg: 12px;             /* large containers, hero metric strip */
+  --radius-lg: 12px;             /* large containers, hero metric strip, exhibit frame */
+  --radius-full: 9999px;         /* pills / round chips */
 
-  /* ── Spacing ── */
+  /* ───────────────────────── Spacing ───────────────────────── */
   --space-unit: 4px;
   --gutter: 24px;
   --margin-mobile: 20px;
@@ -102,7 +153,7 @@
   --entry-max: 760px;
 }
 
-/* ── Base element styling ── */
+/* ═══════════════════════════ Base element styling ═══════════════════════════ */
 * {
   box-sizing: border-box;
 }
@@ -146,4 +197,253 @@ code,
 .mono,
 .mono-data {
   font-family: var(--font-mono);
+}
+
+/* ═══════════════════════════ Global utility classes ═══════════════════════════
+ *
+ * Composable, generic, CSS-only. Component agents apply these so section rhythm,
+ * elevation, and the type hierarchy stay coherent across the site without each
+ * component re-deriving them.
+ */
+
+/* ── Section rhythm ──────────────────────────────────────────────────────────
+ * Wrap a page section to give it vertical breathing room + an optional alternating
+ * surface band so adjacent sections separate (the "one monotone scroll" fix).
+ *   .section-band       — default: hairline-divided, transparent (sits on base).
+ *   .section-band--alt  — gently raised surface band to break the rhythm.
+ * Full-bleed background, content kept to --content-max by the inner block.
+ */
+.section-band {
+  padding-block: var(--section-gap-mobile);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.section-band:first-child {
+  border-top: none;
+}
+
+.section-band--alt {
+  background: var(--surface-raised);
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+@media (min-width: 769px) {
+  .section-band {
+    padding-block: var(--section-gap);
+  }
+}
+
+/* ── Eyebrow + section heading (the hierarchy classes) ───────────────────────
+ * .eyebrow         — amber uppercase kicker placed ABOVE a section heading.
+ * .section-heading — the 28px Newsreader section head (distinct from 56px hero).
+ * .section-dek     — optional one-line secondary-ink intro under a heading.
+ */
+.eyebrow {
+  display: block;
+  font-family: var(--font-body);
+  font-size: var(--type-eyebrow-size);
+  font-weight: var(--label-caps-weight);
+  letter-spacing: var(--type-eyebrow-ls);
+  text-transform: uppercase;
+  color: var(--brand);
+  margin: 0 0 var(--stack-tight);
+}
+
+.section-heading {
+  font-family: var(--font-display);
+  font-size: var(--type-section-size);
+  line-height: var(--type-section-lh);
+  letter-spacing: var(--type-section-ls);
+  font-weight: 500;
+  color: var(--ink-primary);
+  margin: 0;
+}
+
+.section-dek {
+  font-family: var(--font-body);
+  font-size: var(--body-lg-size);
+  line-height: var(--body-lg-lh);
+  color: var(--ink-secondary);
+  max-width: var(--reading-measure);
+  margin: var(--stack) 0 0;
+}
+
+/* ── Elevated card ───────────────────────────────────────────────────────────
+ * Border + shadow + radius + a CSS-only hover lift. The default card surface so
+ * cards stop blending into the background. Compose with utility/local padding.
+ */
+.card-elevated {
+  background: var(--surface-raised);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.16s ease,
+    border-color 0.16s ease;
+}
+
+.card-elevated:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-card-hover);
+  transform: translateY(-2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-elevated {
+    transition: none;
+  }
+  .card-elevated:hover {
+    transform: none;
+  }
+}
+
+/* ── Exhibit frame ───────────────────────────────────────────────────────────
+ * Presents the embedded dashboard screenshot as a framed exhibit with device
+ * chrome (a title bar with three dots) + a deep shadow + an emphasized caption,
+ * instead of a floating thumbnail. Pure CSS chrome (the dots are ::before).
+ *
+ * Markup contract:
+ *   <figure class="exhibit-frame">
+ *     <div class="exhibit-frame__bar"><span class="exhibit-frame__title">…</span></div>
+ *     <div class="exhibit-frame__body"><img …/></div>
+ *     <figcaption class="exhibit-frame__caption">…</figcaption>
+ *   </figure>
+ */
+.exhibit-frame {
+  margin: 0;
+  background: var(--surface-overlay);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-exhibit);
+  overflow: hidden;
+}
+
+.exhibit-frame__bar {
+  display: flex;
+  align-items: center;
+  gap: var(--stack-tight);
+  padding: 10px var(--stack);
+  background: var(--surface-base);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+/* three traffic-light dots — neutral, never the verdict colors */
+.exhibit-frame__bar::before {
+  content: '';
+  flex: 0 0 auto;
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-full);
+  background: #3a4659;
+  box-shadow: 16px 0 0 #3a4659, 32px 0 0 #3a4659;
+  margin-right: 32px;
+}
+
+.exhibit-frame__title {
+  font-family: var(--font-mono);
+  font-size: var(--mono-sm-size);
+  color: var(--ink-muted);
+}
+
+.exhibit-frame__body {
+  display: block;
+  background: var(--surface-base);
+}
+
+.exhibit-frame__body :is(img, picture, svg) {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.exhibit-frame__caption {
+  padding: var(--stack);
+  background: var(--surface-overlay);
+  border-top: 1px solid var(--border-subtle);
+  font-family: var(--font-body);
+  font-size: var(--body-sm-size);
+  line-height: 1.5;
+  color: var(--ink-secondary);
+}
+
+/* ── Cycle tape ──────────────────────────────────────────────────────────────
+ * A horizontal strip of small marks: quiet proceed marks + red intercept marks.
+ * Glanceable, count-honest proof. Pure CSS — the CycleTape.astro component emits
+ * N spans (one per cycle), tagging `intercepted` of them with the --intercept
+ * modifier. No timeline is implied (we only have aggregate counts, not order).
+ *
+ *   .cycle-tape                    — the flex container (wraps).
+ *   .cycle-tape__mark              — a single quiet proceed mark.
+ *   .cycle-tape__mark--intercept   — the red intercept mark (the star).
+ *   .cycle-tape__caption           — the honest, timeline-free caption.
+ */
+.cycle-tape {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--mark-gap);
+  align-items: center;
+}
+
+.cycle-tape__mark {
+  flex: 0 0 auto;
+  width: var(--mark-size);
+  height: var(--mark-size);
+  border-radius: var(--mark-radius);
+  background: var(--mark-proceed);
+}
+
+.cycle-tape__mark--intercept {
+  background: var(--mark-intercept);
+  /* a faint halo so the red marks pop out of the proceed field at a glance */
+  box-shadow: 0 0 0 1px var(--intercept-edge);
+}
+
+.cycle-tape__caption {
+  width: 100%;
+  font-family: var(--font-mono);
+  font-size: var(--mono-sm-size);
+  color: var(--ink-muted);
+  margin: var(--stack-tight) 0 0;
+}
+
+/* ── Badge / chip polish ─────────────────────────────────────────────────────
+ * Generic pill. Default is neutral; modifiers tint by meaning. Use --intercept
+ * for interception-count chips (the star), --proceed (quiet) for confirmed
+ * states, --caution for warnings. NEVER tint a safety-win (e.g. "0 drained")
+ * with --proceed — those stay neutral.
+ */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-overlay);
+  font-family: var(--font-mono);
+  font-size: var(--mono-sm-size);
+  font-weight: var(--mono-data-weight);
+  line-height: 1.4;
+  color: var(--ink-secondary);
+  white-space: nowrap;
+}
+
+.chip--intercept {
+  border-color: var(--intercept-edge);
+  background: var(--intercept-wash);
+  color: var(--intercept);
+}
+
+.chip--caution {
+  border-color: var(--caution-edge);
+  background: var(--caution-wash);
+  color: var(--caution);
+}
+
+.chip--proceed {
+  border-color: var(--proceed-edge);
+  background: var(--proceed-wash);
+  color: var(--proceed);
 }

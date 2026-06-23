@@ -1,9 +1,11 @@
 ---
 // ScreenshotGallery (Story 75.7) — renders one or more clean dashboard screenshots from the
-// 75.6 capture manifest (src/data/screenshots.json) as <figure> elements with a deterministic
-// provenance caption. The caption is machine-generated from `captureDate` + `sourceBuild` — no
-// editorial adjective, no free text (G2/G11). When `shots` is empty the component renders nothing
-// (graceful degradation, AC2) — no broken <img>, no empty <figure>.
+// 75.6 capture manifest (src/data/screenshots.json) as framed EXHIBITS: a window-chrome frame
+// (.exhibit-frame from tokens.css) with a deep shadow and an emphasized evidence label, so the
+// proof reads as proof — not a floating thumbnail. The provenance line stays machine-generated
+// from `captureDate` + `sourceBuild` — no editorial adjective, no free text (G2/G11). When `shots`
+// is empty the component renders nothing (graceful degradation, AC2) — no broken <img>, no empty
+// <figure>.
 //
 // This component only CONSUMES the already-gated manifest; the fail-closed redaction gate lives in
 // the capture script (75.6, G11). Static Astro only — no <script> block, no client JS.
@@ -13,6 +15,20 @@ interface Props {
   shots: ScreenshotManifestEntry[];
 }
 const { shots } = Astro.props;
+
+// An evidence label per known view — what safety surface the exhibit documents. The label is the
+// emphasized lead; the deterministic provenance line below it stays the caption (so the manifest
+// remains the single source of truth for dates/builds). Copy is kept clear of the banned-phrase
+// denylist (the overclaim adjectives in lint-homepage-copy.ts). Unknown views fall back to a
+// neutral label so the frame never invents a claim about a screenshot it can't name.
+const EVIDENCE_LABELS: Record<string, string> = {
+  home: 'The live dashboard — every move, and every move the rail blocked, on the record',
+  'kill-switch': 'The kill switch — the operator stop control that halts the agent',
+  portfolio: 'The portfolio of record — what the agent holds on-chain right now',
+  overview: 'The overview — the agent under the supervised safety layer',
+};
+const evidenceLabelFor = (viewId: string): string =>
+  EVIDENCE_LABELS[viewId] ?? 'Dashboard exhibit — the supervised agent on the record';
 ---
 
 {
@@ -25,18 +41,34 @@ const { shots } = Astro.props;
           day: 'numeric',
           timeZone: 'UTC',
         });
+        // The deterministic provenance line — kept verbatim as the direct text of the caption so
+        // the manifest stays the source of truth (and the 75.7 caption assertions hold).
         const caption = `Dashboard screenshot — as of ${formattedDate}, build ${shot.sourceBuild}`;
+        const evidenceLabel = evidenceLabelFor(shot.viewId);
+        // The window-chrome title reads like a browser tab pointing at the dashboard view.
+        const frameTitle = `overseer dashboard · ${shot.viewId}`;
         return (
-          <figure class="screenshot-figure">
-            <img
-              src={`/${shot.filePath}`}
-              alt={caption}
-              class="screenshot-img"
-              loading="lazy"
-              decoding="async"
-            />
-            <figcaption class="screenshot-caption">{caption}</figcaption>
-          </figure>
+          <div class="screenshot-figure">
+            <figure class="exhibit-frame">
+              <div class="exhibit-frame__bar">
+                <span class="exhibit-frame__title">{frameTitle}</span>
+              </div>
+              <div class="exhibit-frame__body">
+                <img
+                  src={`/${shot.filePath}`}
+                  alt={caption}
+                  class="screenshot-img"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+              <div class="exhibit-frame__caption exhibit-caption">
+                <span class="exhibit-caption__kicker">Exhibit</span>
+                <p class="exhibit-caption__label">{evidenceLabel}</p>
+                <figcaption class="screenshot-caption">{caption}</figcaption>
+              </div>
+            </figure>
+          </div>
         );
       })}
     </div>
@@ -48,20 +80,49 @@ const { shots } = Astro.props;
     margin: var(--stack) 0 0;
     max-width: var(--entry-max);
   }
+
+  /* The gallery item itself adds no box — the .exhibit-frame inside is the visual exhibit. */
   .screenshot-figure {
-    margin: 0;
+    display: block;
   }
+
+  /* .exhibit-frame, __bar, __title, __body, __caption come from tokens.css (the contract frame:
+     window chrome + --shadow-exhibit). Only the emphasized-caption layout lives here. */
   .screenshot-img {
+    display: block;
     width: 100%;
-    max-width: 100%;
-    border-radius: var(--radius);
-    border: 1px solid var(--hairline);
+    height: auto;
   }
-  .screenshot-caption {
+
+  /* Stack the caption: an amber kicker, the emphasized evidence label (the lead), then the
+     deterministic provenance line in muted mono. The provenance <figcaption> is the direct text
+     of .screenshot-caption so the manifest stays the single source of truth. */
+  .exhibit-caption {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .exhibit-caption__kicker {
     font-family: var(--font-body);
+    font-size: var(--type-eyebrow-size);
+    font-weight: var(--label-caps-weight);
+    letter-spacing: var(--type-eyebrow-ls);
+    text-transform: uppercase;
+    color: var(--brand);
+  }
+
+  .exhibit-caption__label {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--type-card-size);
+    line-height: var(--type-card-lh);
+    color: var(--ink-primary);
+  }
+
+  .screenshot-caption {
+    font-family: var(--font-mono);
     font-size: var(--mono-sm-size);
     color: var(--ink-muted);
-    margin-top: var(--stack-tight);
-    display: block;
   }
 </style>

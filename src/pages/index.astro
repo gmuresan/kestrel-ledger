@@ -12,6 +12,7 @@
 // The §2 step copy and §5 disclosure are Gm-owned static text (no banned terms — G2).
 import BaseLayout from '../layouts/BaseLayout.astro';
 import MetricStrip from '../components/MetricStrip.astro';
+import CycleTape from '../components/CycleTape.astro';
 import HowItWorksSection from '../components/HowItWorksSection.astro';
 import SafetyLayerSection from '../components/SafetyLayerSection.astro';
 import LatestEntriesSection from '../components/LatestEntriesSection.astro';
@@ -79,29 +80,50 @@ const heroShots = homeShot ? [homeShot] : [];
       generatedAt={s.generatedAt}
     />
 
-    {hasFleet && <FleetRosterSection perAgent={s.perAgent!} />}
+    {/* The cycle tape reads from the SAME fleet roll-up the MetricStrip uses, so the
+        glanceable mark count and the "cycles supervised" / "moves blocked" figures agree. */}
+    <CycleTape
+      total={metricsToShow.cyclesSupervised}
+      intercepted={metricsToShow.movesBlocked}
+    />
 
     <p class="cta">
       <a class="cta-button primary" href="/ledger">READ THE LEDGER</a>
-      <a class="cta-button secondary" href="/feed.xml">RSS</a>
+      <a class="cta-button ghost" href="/feed.xml">RSS</a>
     </p>
 
     {/* §1.5 Proof under the pitch (Story 75.7, G10) — the product the pitch describes. */}
     <ScreenshotGallery shots={heroShots} />
   </section>
 
+  {/* ── §1.6 The fleet ────────────────────────────────────────────────── */}
+  {
+    hasFleet && (
+      <section class="section-band section-band--alt">
+        <FleetRosterSection perAgent={s.perAgent!} />
+      </section>
+    )
+  }
+
   {/* ── §2 How it works ───────────────────────────────────────────────── */}
-  <HowItWorksSection />
+  <section class="section-band">
+    <HowItWorksSection />
+  </section>
 
   {/* ── §3 The safety layer, on the record ────────────────────────────── */}
-  <SafetyLayerSection interceptions={s.latestInterceptions} generatedAt={s.generatedAt} />
+  <section class="section-band section-band--alt">
+    <SafetyLayerSection interceptions={s.latestInterceptions} generatedAt={s.generatedAt} />
+  </section>
 
   {/* ── §4 Latest from both streams ───────────────────────────────────── */}
-  <LatestEntriesSection latestByStream={s.latestByStream} generatedAt={s.generatedAt} />
+  <section class="section-band">
+    <LatestEntriesSection latestByStream={s.latestByStream} generatedAt={s.generatedAt} />
+  </section>
 
   {/* ── §5 What this is / isn't (the two required disclaimers) ─────────── */}
-  <section class="disclosure" aria-label="What this is and isn't">
-    <h2 class="section-title">What this is — and what it isn’t</h2>
+  <section class="section-band section-band--alt disclosure" aria-label="What this is and isn't">
+    <p class="eyebrow">WHAT THIS IS</p>
+    <h2 class="section-heading">What this is — and what it isn’t</h2>
     <p class="body">
       What this is: a public record of one agent’s decisions and what the safety layer did, with
       on-chain receipts you can check yourself. What this isn’t: investment advice, a product you
@@ -115,7 +137,9 @@ const heroShots = homeShot ? [homeShot] : [];
   </section>
 
   {/* ── §6 Waitlist ──────────────────────────────────────────────────── */}
-  <WaitlistSection />
+  <section class="section-band">
+    <WaitlistSection />
+  </section>
 </BaseLayout>
 
 <style>
@@ -174,27 +198,40 @@ const heroShots = homeShot ? [homeShot] : [];
     color: var(--ink-on-accent);
   }
 
-  .cta-button.secondary {
+  /* Quiet/ghost secondary CTA — recedes next to the amber primary. */
+  .cta-button.ghost {
     background: transparent;
+    color: var(--ink-muted);
+    border: 1px solid var(--border-subtle);
+  }
+
+  .cta-button.ghost:hover {
     color: var(--ink-secondary);
-    border: 1px solid var(--hairline-strong);
+    border-color: var(--border-strong);
   }
 
   .cta-button:hover {
     text-decoration: none;
   }
 
+  /* The cycle tape sits just under the hero metric strip as glanceable proof. */
+  .hero :global(.cycle-tape-wrap) {
+    margin-top: var(--stack);
+  }
+
+  /* ── Section rhythm: the bands supply vertical gap + dividers, so the wrapped
+     child sections must not re-add their own leading section-gap margin (it would
+     double the spacing). Zero the top margin of each band's first section child. ── */
+  .section-band > :global(section) {
+    margin-top: 0;
+  }
+
   .disclosure {
-    margin: var(--section-gap-mobile) 0 0;
     max-width: var(--reading-measure);
   }
 
-  .disclosure .section-title {
-    font-family: var(--font-display);
-    font-size: var(--headline-size);
-    font-weight: 500;
-    color: var(--ink-primary);
-    margin: 0 0 var(--stack);
+  .disclosure .section-heading {
+    margin-bottom: var(--stack);
   }
 
   .disclosure .body {

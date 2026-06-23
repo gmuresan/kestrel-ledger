@@ -25,6 +25,7 @@ const dist = join(root, 'dist');
 const statePath = join(root, 'src', 'data', 'state.json');
 const screenshotsPath = join(root, 'src', 'data', 'screenshots.json');
 const indexAstroPath = join(root, 'src', 'pages', 'index.astro');
+const aboutAstroPath = join(root, 'src', 'pages', 'about.astro');
 const agentPageAstroPath = join(root, 'src', 'pages', 'agents', '[agentSlug].astro');
 const fleetRosterAstroPath = join(root, 'src', 'components', 'FleetRosterSection.astro');
 const landingComponents = [
@@ -203,8 +204,8 @@ describe('AC5.3 — null self-custodied capital renders $—', () => {
 });
 
 describe('AC5.4 — banned-phrase gate (G2)', () => {
-  it('the real landing source (index.astro + components) is clean', () => {
-    const files = [indexAstroPath, ...landingComponents].map((p) => ({
+  it('the real landing source (index.astro + about.astro + components) is clean', () => {
+    const files = [indexAstroPath, aboutAstroPath, ...landingComponents].map((p) => ({
       path: p,
       source: readFileSync(p, 'utf-8'),
     }));
