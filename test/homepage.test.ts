@@ -376,6 +376,19 @@ describe('Story 86.3 (AC3) — banned-phrase gate for the verify page', () => {
   });
 });
 
+// Story 86.4 (AC2) — the banned-phrase lint scans an explicit file list, so the new
+// /self-custody page source must be added to the linted set here. G2 honesty bar — one
+// denylist, no overclaim on the self-custody surface.
+describe('Story 86.4 (AC2) — banned-phrase gate for the self-custody page', () => {
+  const selfCustodyPagePath = join(root, 'src', 'pages', 'self-custody.astro');
+  it('the /self-custody page source is clean', () => {
+    const result = lintHomepageCopy([
+      { path: selfCustodyPagePath, source: readFileSync(selfCustodyPagePath, 'utf-8') },
+    ]);
+    expect(result.ok).toBe(true);
+  });
+});
+
 // Helper: build with a given screenshots.json and return the HTML for a specific output file.
 function buildWithScreenshotsForPath(shots: unknown, relPath: string): string {
   writeFileSync(screenshotsPath, `${JSON.stringify(shots, null, 2)}\n`);

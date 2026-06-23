@@ -109,6 +109,9 @@ const gates = [
           ))
         }
       </ol>
+      <p class="flow-link">
+        <a href="/self-custody">Read the full custody breakdown →</a>
+      </p>
     </section>
 
     {/* ── Gate list ──────────────────────────────────────────────────── */}
@@ -276,6 +279,22 @@ const gates = [
     font-size: var(--type-card-size);
     color: var(--ink-muted);
     pointer-events: none;
+  }
+
+  /* ── Flow link (leads to self-custody deep-link) ────────────────────── */
+  .flow-link {
+    margin: var(--stack) 0 0;
+    font-family: var(--font-body);
+    font-size: var(--body-sm-size);
+  }
+
+  .flow-link a {
+    color: var(--brand);
+    text-decoration: none;
+  }
+
+  .flow-link a:hover {
+    text-decoration: underline;
   }
 
   /* ── Gate list ───────────────────────────────────────────────────────── */

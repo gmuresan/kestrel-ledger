@@ -1,0 +1,303 @@
+---
+// self-custody.astro — Sober, factual map of the signing topology (Story 86.4).
+// Opens with the safety mechanic, not a benefit claim. Zero client JS.
+// G2: honesty bar — no overclaims, no marketing language.
+// G1: no derived numbers.
+// G3: zero script tags.
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const flow = [
+  {
+    step: 'Agent',
+    detail: 'proposes an action — it has no signing capability',
+    icon: 'agent',
+  },
+  {
+    step: 'Overseer',
+    detail: 'verifies the proposal against policy gates and runs a second-model critic',
+    icon: 'overseer',
+  },
+  {
+    step: 'Operator',
+    detail: 'reviews the plan and the critic\'s output, then approves or vetoes',
+    icon: 'operator',
+  },
+  {
+    step: 'Key',
+    detail: 'never leaves the operator\'s machine — signing runs locally in the overseer process',
+    icon: 'key',
+  },
+  {
+    step: 'Chain',
+    detail: 'an on-chain receipt, readable on any block explorer',
+    icon: 'chain',
+  },
+];
+---
+
+<BaseLayout title="How custody works — Aegentic Ledger">
+  <article class="custody-page">
+
+    {/* ── Header ──────────────────────────────────────────────────────────── */}
+    <header class="section-band custody-head">
+      <p class="eyebrow">CUSTODY</p>
+      <h1 class="custody-title">The key stays on the operator's machine. Here is how.</h1>
+      <p class="custody-lede">
+        The agent that runs on the Aegentic Ledger is an advisor, not a signer. It can propose
+        actions; it cannot execute them. Signing requires a separate process — on the operator's
+        machine, after human review — and the constraint is enforced by code, not policy.
+      </p>
+    </header>
+
+    {/* ── Five-step topology ──────────────────────────────────────────────── */}
+    <section class="section-band" aria-label="Five-step signing topology">
+      <p class="eyebrow">FROM PROPOSAL TO RECEIPT</p>
+      <h2 class="section-heading">Every transaction passes through five steps before it reaches the chain</h2>
+      <p class="section-dek">
+        No step is optional. The agent cannot short-circuit the overseer or operator review.
+      </p>
+
+      <ol class="flow card-elevated" role="list">
+        {
+          flow.map((node, i) => (
+            <li class="flow-node">
+              <span class="flow-icon" aria-hidden="true">
+                {node.icon === 'agent' && (
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="5" y="7" width="14" height="11" rx="2" />
+                    <line x1="12" y1="3" x2="12" y2="7" />
+                    <circle cx="9.5" cy="12" r="0.6" fill="currentColor" />
+                    <circle cx="14.5" cy="12" r="0.6" fill="currentColor" />
+                  </svg>
+                )}
+                {node.icon === 'overseer' && (
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1.5 12s3.5-6.5 10.5-6.5S22.5 12 22.5 12s-3.5 6.5-10.5 6.5S1.5 12 1.5 12Z" />
+                    <circle cx="12" cy="12" r="2.6" />
+                  </svg>
+                )}
+                {node.icon === 'operator' && (
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="8" r="3.4" />
+                    <path d="M5.5 19a6.5 6.5 0 0 1 13 0" />
+                  </svg>
+                )}
+                {node.icon === 'key' && (
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="8" cy="8" r="4" />
+                    <path d="M11 11l8 8" />
+                    <path d="M16 16l2-2" />
+                    <path d="M19 13l1.5 1.5" />
+                  </svg>
+                )}
+                {node.icon === 'chain' && (
+                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 13a4 4 0 0 1 0-5l2-2a4 4 0 0 1 6 6l-1 1" />
+                    <path d="M15 11a4 4 0 0 1 0 5l-2 2a4 4 0 0 1-6-6l1-1" />
+                  </svg>
+                )}
+              </span>
+              <span class="flow-text">
+                <span class="flow-step">{node.step}</span>
+                <span class="flow-detail">{node.detail}</span>
+              </span>
+              {i < flow.length - 1 && (
+                <span class="flow-arrow" aria-hidden="true">→</span>
+              )}
+            </li>
+          ))
+        }
+      </ol>
+    </section>
+
+    {/* ── Machine-checked constraint ──────────────────────────────────────── */}
+    <section class="section-band section-band--alt" aria-label="Machine-checked constraint">
+      <div class="constraint-inner">
+        <p class="eyebrow">THE MACHINE-CHECKED CONSTRAINT</p>
+        <h2 class="section-heading">The agent's inability to sign is a structural fact, not a convention</h2>
+        <p class="section-dek">
+          Every CI push to this system runs <code>tests/boundaries.test.ts</code>, which asserts
+          that <code>createWalletClient</code> and <code>privateKeyToAccount</code> are absent from
+          the agent package source. If either import appeared, the CI build would fail. The agent
+          cannot sign — not because a policy says so, but because the signing primitives are
+          structurally absent from its source and that absence is checked automatically on every push.
+        </p>
+        <p class="section-dek">
+          Signing occurs in the overseer process, which runs on the operator's machine. The key is
+          never transmitted to any external service. The operator can inspect the overseer source and
+          the boundaries test themselves — there is no closed-box claim to take on faith.
+        </p>
+      </div>
+    </section>
+
+    {/* ── Footer link ─────────────────────────────────────────────────────── */}
+    <section class="section-band">
+      <p class="back-link">
+        <a href="/about">← Back to the gate list</a>
+      </p>
+    </section>
+
+  </article>
+</BaseLayout>
+
+<style>
+  .custody-page {
+    max-width: var(--content-max);
+    margin: 0 auto;
+  }
+
+  .custody-head {
+    border-top: none;
+  }
+
+  .custody-title {
+    font-family: var(--font-display);
+    font-size: var(--type-hero-size);
+    font-weight: var(--display-xl-weight);
+    line-height: var(--type-hero-lh);
+    letter-spacing: var(--type-hero-ls);
+    color: var(--ink-primary);
+    margin: 0;
+    max-width: 22ch;
+  }
+
+  .custody-lede {
+    font-family: var(--font-body);
+    font-size: var(--body-lg-size);
+    line-height: var(--body-lg-lh);
+    color: var(--ink-secondary);
+    max-width: var(--reading-measure);
+    margin: var(--stack) 0 0;
+  }
+
+  /* ── Flow diagram ─────────────────────────────────────────────────────── */
+  .flow {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: var(--gutter);
+    margin: var(--gutter) 0 0;
+    padding: var(--gutter);
+  }
+
+  .flow-node {
+    position: relative;
+    flex: 1 1 0;
+    min-width: 150px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--stack-tight);
+  }
+
+  .flow-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    background: var(--surface-sunken);
+    border: 1px solid var(--border-subtle);
+    color: var(--brand);
+  }
+
+  .flow-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .flow-step {
+    font-family: var(--font-display);
+    font-size: var(--type-card-size);
+    line-height: var(--type-card-lh);
+    color: var(--ink-primary);
+  }
+
+  .flow-detail {
+    font-family: var(--font-body);
+    font-size: var(--body-sm-size);
+    line-height: 1.45;
+    color: var(--ink-secondary);
+  }
+
+  .flow-arrow {
+    position: absolute;
+    top: 8px;
+    right: calc(var(--gutter) / -2);
+    transform: translateX(50%);
+    font-family: var(--font-mono);
+    font-size: var(--type-card-size);
+    color: var(--ink-muted);
+    pointer-events: none;
+  }
+
+  /* ── Machine-checked constraint ──────────────────────────────────────── */
+  .constraint-inner {
+    max-width: var(--content-max);
+  }
+
+  .constraint-inner code {
+    font-family: var(--font-mono);
+    font-size: var(--body-sm-size);
+    background: var(--surface-overlay);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius);
+    padding: 1px 5px;
+    color: var(--ink-primary);
+  }
+
+  /* ── Back link ──────────────────────────────────────────────────────── */
+  .back-link {
+    font-family: var(--font-body);
+    font-size: var(--body-sm-size);
+    color: var(--ink-secondary);
+  }
+
+  .back-link a {
+    color: var(--brand);
+    text-decoration: none;
+  }
+
+  .back-link a:hover {
+    text-decoration: underline;
+  }
+
+  /* ── Responsive ─────────────────────────────────────────────────────── */
+  @media (max-width: 768px) {
+    .custody-title {
+      font-size: clamp(2rem, 7vw, var(--type-hero-size));
+      max-width: none;
+    }
+
+    .flow {
+      flex-direction: column;
+      gap: var(--stack);
+    }
+
+    .flow-node {
+      flex-direction: row;
+      align-items: center;
+      gap: var(--stack);
+    }
+
+    .flow-text {
+      gap: 1px;
+    }
+
+    .flow-arrow {
+      top: auto;
+      bottom: calc(var(--stack) / -2);
+      left: 20px;
+      right: auto;
+      transform: translateY(50%) rotate(90deg);
+    }
+  }
+
+  @media (max-width: 480px) {
+    .custody-title {
+      font-size: clamp(1.6rem, 8vw, 2.25rem);
+    }
+  }
+</style>
