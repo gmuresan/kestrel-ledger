@@ -381,6 +381,79 @@ describe('Story 86.4 — self-custody page build probes', () => {
   });
 });
 
+describe('Story 75.5 — AgentCard G4 color invariant (moves-blocked red, drained never green)', () => {
+  // COVERAGE-1 (HIGH) — the locked color-meaning rule on the fleet-roster AgentCard is
+  // probed against the BUILT dist/. The committed src/data/state.json carries a two-agent
+  // `perAgent` map, so the home page renders AgentCards in dist/index.html. The invariant:
+  // the moves-blocked figure wears the intercept-red `.blocked-value`, and the drained
+  // figure carries NO green / success / victory / positive tint (and never the red star).
+
+  // Pull every AgentCard `.safety-item` block out of the home page. Each item is the
+  // value span (carrying the class set under test) followed by its `.label` span.
+  function safetyItems(html: string): { valueClass: string; labelText: string }[] {
+    const re =
+      /<span class="(value mono safety-value[^"]*)"[^>]*>[^<]*<\/span>\s*<span class="label"[^>]*>([\s\S]*?)<\/span>/g;
+    const out: { valueClass: string; labelText: string }[] = [];
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(html)) !== null) {
+      out.push({ valueClass: m[1], labelText: m[2].replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim() });
+    }
+    return out;
+  }
+
+  it('wraps the moves-blocked value in the intercept-red .blocked-value class', () => {
+    const html = read('index.html');
+    const blocked = safetyItems(html).filter((s) => s.labelText.startsWith('moves blocked'));
+    expect(blocked.length).toBeGreaterThan(0); // AgentCards are present on the home page
+    for (const item of blocked) {
+      expect(item.valueClass).toContain('blocked-value');
+    }
+  });
+
+  it('renders the drained value in NEUTRAL ink — no green/success/victory tint, never the red star', () => {
+    const html = read('index.html');
+    const drained = safetyItems(html).filter((s) => s.labelText.startsWith('drained'));
+    expect(drained.length).toBeGreaterThan(0);
+    // Any token that would read as a positive/celebratory color is forbidden on the drained
+    // figure. `blocked-value` (the red star) is reserved for moves-blocked and must not appear.
+    const FORBIDDEN = /(proceed|success|victory|positive|green|win|good|safe-value|blocked-value)/;
+    for (const item of drained) {
+      expect(item.valueClass).not.toMatch(FORBIDDEN);
+      // The drained figure shares the same base class set as a quiet figure; assert the exact
+      // neutral set so a future change that adds a tint class trips this probe.
+      expect(item.valueClass.trim()).toBe('value mono safety-value');
+    }
+  });
+});
+
+describe('Story 86.2 — build-log page build probes', () => {
+  // COVERAGE-2 (MEDIUM) — /build-log (86.2) got only a banned-phrase source lint; mirror the
+  // /verify + /self-custody dist probes. The build-log fixture (2026-06-15) is injected by the
+  // suite-wide beforeAll, so the archive lists it above the committed build-log entries.
+
+  it('emits no <script element on the build-log page (zero client JS)', () => {
+    const html = read('build-log/index.html');
+    expect(html).not.toContain('<script');
+  });
+
+  it('renders the build-log archive newest-first', () => {
+    const html = read('build-log/index.html');
+    const newest = html.indexOf(BUILD_LOG_SLUG); // 2026-06-15 (injected fixture)
+    const mid = html.indexOf('2026-06-10-build-log-02'); // committed
+    const oldest = html.indexOf('2026-05-29-build-log-01'); // committed
+    expect(newest).toBeGreaterThan(-1);
+    expect(mid).toBeGreaterThan(-1);
+    expect(oldest).toBeGreaterThan(-1);
+    expect(newest).toBeLessThan(mid);
+    expect(mid).toBeLessThan(oldest);
+  });
+
+  it('carries a nav link to the build-log route from the home page', () => {
+    const html = read('index.html');
+    expect(html).toContain('href="/build-log"');
+  });
+});
+
 describe('splitEntry — prose ↔ fact-panel split', () => {
   it('splits on the first lone --- thematic break', () => {
     const { prose, fact } = splitEntry('the prose line\n\n---\n\n## THE RECORD\n\nfact rows');

@@ -10,10 +10,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     <p class="eyebrow">VERIFY ON CHAIN</p>
     <h1>Re-derive any leg from the chain</h1>
     <p class="lede">
-      Every confirmed on-chain action the agent takes is recorded in a machine-readable manifest.
-      You can check this yourself: fetch the manifest, pick any entry with a transaction hash, and
-      verify the amount against the public Base RPC. The operator holds the keys and publishes what
-      the supervised agent did — this page shows you exactly how to confirm it independently.
+      The operator's export pipeline publishes a machine-readable manifest of the agent's
+      confirmed on-chain actions. Once that manifest is published (see the note below), you can
+      check the record yourself: fetch it, pick any entry with a transaction hash, and verify the
+      amount against the public Base RPC. The operator holds the keys; this page documents the
+      manifest shape and shows you exactly how to confirm any leg independently.
     </p>
   </header>
 
@@ -216,7 +217,9 @@ curl -s -X POST https://mainnet.base.org \
     font-weight: var(--label-caps-weight);
     letter-spacing: var(--type-eyebrow-ls);
     text-transform: uppercase;
-    color: var(--ink-muted);
+    /* Amber kicker, matching the unified eyebrow convention across the epic (about,
+       self-custody, build-log, and the global .eyebrow) — not the grey it shipped with. */
+    color: var(--brand);
     margin: 0 0 var(--stack-tight);
   }
 
