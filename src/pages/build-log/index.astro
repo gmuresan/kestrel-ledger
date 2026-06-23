@@ -1,0 +1,167 @@
+---
+// Build Log index (Story 86.2, AC1) — the build-in-public methodology stream as a
+// first-class route. Lists every `stream: 'build-log'` entry NEWEST-FIRST as styled
+// elevated-card rows, mirroring the /ledger archive style (stream badge + date +
+// title + one-line dek) but scoped to a single stream — so there are no stream
+// filter chips (only one stream lives here) and no per-agent filter. Zero client JS.
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import StreamBadge from '../../components/StreamBadge.astro';
+import { splitEntry } from '../../lib/split-entry';
+
+const entries = await getCollection('ledger');
+// Build-log only, newest-first by date. Ties fall back to the slug (filename) descending,
+// matching the /ledger archive comparator so same-day entries order consistently everywhere.
+const buildLogEntries = entries
+  .filter((e) => e.data.stream === 'build-log')
+  .sort((a, b) => {
+    const byDate = b.data.date.localeCompare(a.data.date);
+    return byDate !== 0 ? byDate : b.slug.localeCompare(a.slug);
+  });
+
+// dek: the first sentence of the editorial prose (real text, trimmed to one line) — the same
+// honest-by-construction derivation the /ledger archive uses. A build-log entry is prose-only
+// (no fact panel), so there are no count chips to derive.
+const FIRST_SENTENCE = /^[\s\S]*?[.!?](?=\s|$)/;
+function firstSentence(prose: string): string {
+  const flat = prose.replace(/\s+/g, ' ').trim();
+  const m = FIRST_SENTENCE.exec(flat);
+  return (m ? m[0] : flat).trim();
+}
+
+const rows = buildLogEntries.map((entry) => {
+  const { prose } = splitEntry(entry.body);
+  return { entry, dek: firstSentence(prose) };
+});
+---
+
+<BaseLayout title="Build Log — Aegentic">
+  <header class="archive-head">
+    <p class="eyebrow">THE METHODOLOGY RECORD</p>
+    <h1>Build Log</h1>
+    <p class="lede">
+      This is the build-in-public record of how the oversight system that supervises the agent
+      was designed and iterated. Each entry covers an engineering decision — what changed, why,
+      and what the tradeoffs were. The trades are in the Ledger; this stream is about the rails
+      that govern them.
+    </p>
+  </header>
+
+  {
+    rows.length === 0 ? (
+      <p class="empty">No build-log entries yet.</p>
+    ) : (
+      <ol class="entry-list">
+        {rows.map(({ entry, dek }) => {
+          const displayDate = entry.data.date.includes('T')
+            ? entry.data.date.slice(0, entry.data.date.indexOf('T'))
+            : entry.data.date;
+          return (
+            <li>
+              <a
+                class="entry-row card-elevated"
+                href={`/ledger/${entry.slug}/`}
+                style="--accent: var(--stream-build)"
+              >
+                <div class="entry-row__meta">
+                  <StreamBadge stream={entry.data.stream} />
+                  <span class="entry-row__date">{displayDate}</span>
+                </div>
+                <h2 class="entry-row__title">{entry.data.title}</h2>
+                {dek && <p class="entry-row__dek">{dek}</p>}
+              </a>
+            </li>
+          );
+        })}
+      </ol>
+    )
+  }
+</BaseLayout>
+
+<style>
+  .archive-head {
+    max-width: var(--entry-max);
+    margin: var(--stack) 0 var(--section-gap-mobile);
+  }
+
+  .archive-head h1 {
+    font-family: var(--font-display);
+    font-size: var(--display-lg-size);
+    font-weight: 500;
+    margin: 0;
+  }
+
+  .lede {
+    font-family: var(--font-body);
+    font-size: var(--body-lg-size);
+    line-height: var(--body-lg-lh);
+    color: var(--ink-secondary);
+    max-width: var(--reading-measure);
+    margin: var(--stack) 0 0;
+  }
+
+  .entry-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-width: var(--entry-max);
+    display: flex;
+    flex-direction: column;
+    gap: var(--stack);
+  }
+
+  /* ── Archive row (elevated card) — mirrors /ledger so the two streams read as one
+     family. .card-elevated supplies the surface/border/shadow + hover lift from the
+     contract; the local rules add the build-stream-tinted left rail + inner layout. */
+  .entry-row {
+    display: block;
+    position: relative;
+    border-left: 3px solid var(--accent);
+    padding: var(--stack);
+    text-decoration: none;
+  }
+
+  .entry-row:hover {
+    text-decoration: none;
+  }
+
+  .entry-row__meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--gutter);
+    margin-bottom: var(--stack-tight);
+  }
+
+  .entry-row__date {
+    font-family: var(--font-body);
+    font-size: var(--body-sm-size);
+    color: var(--ink-muted);
+  }
+
+  .entry-row__title {
+    font-family: var(--font-display);
+    font-size: var(--type-card-size);
+    line-height: var(--type-card-lh);
+    font-weight: 500;
+    color: var(--ink-primary);
+    margin: 0;
+  }
+
+  .entry-row__dek {
+    font-family: var(--font-body);
+    font-size: var(--body-size);
+    line-height: 1.5;
+    color: var(--ink-secondary);
+    margin: var(--stack-tight) 0 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .empty {
+    color: var(--ink-muted);
+  }
+</style>

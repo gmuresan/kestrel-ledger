@@ -339,6 +339,30 @@ describe('AC5 — banned-phrase gate for fleet hub + agent page sources', () => 
   });
 });
 
+// Story 86.2 (AC3) — the banned-phrase lint scans an explicit file list, so the new
+// /build-log page source AND the curated build-log entries must be added to the linted
+// set here (they are not globbed). G2 honesty bar — one denylist, no overclaim.
+describe('Story 86.2 (AC3) — banned-phrase gate for the Build Log page + curated entries', () => {
+  const buildLogPageAstroPath = join(root, 'src', 'pages', 'build-log', 'index.astro');
+  const curatedEntryPaths = [
+    join(root, 'src', 'content', 'ledger', '2026-06-09-build-log-03.md'),
+    join(root, 'src', 'content', 'ledger', '2026-06-10-build-log-02.md'),
+  ];
+
+  it('the /build-log page source is clean', () => {
+    const result = lintHomepageCopy([
+      { path: buildLogPageAstroPath, source: readFileSync(buildLogPageAstroPath, 'utf-8') },
+    ]);
+    expect(result.ok).toBe(true);
+  });
+
+  it('the curated build-log entries are clean', () => {
+    const files = curatedEntryPaths.map((p) => ({ path: p, source: readFileSync(p, 'utf-8') }));
+    const result = lintHomepageCopy(files);
+    expect(result.ok).toBe(true);
+  });
+});
+
 // Helper: build with a given screenshots.json and return the HTML for a specific output file.
 function buildWithScreenshotsForPath(shots: unknown, relPath: string): string {
   writeFileSync(screenshotsPath, `${JSON.stringify(shots, null, 2)}\n`);

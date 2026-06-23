@@ -49,6 +49,11 @@ const asOf = new Date(generatedAt).toLocaleDateString('en-US', {
       <p class="empty">No entries published yet.</p>
     )
   }
+  {/* Story 86.2 (AC5) — the Build Log is its own methodology stream with a dedicated home,
+      not undifferentiated filler interleaved here. Point readers at the full stream. */}
+  <p class="stream-link">
+    <a href="/build-log">See all build-log entries →</a>
+  </p>
 </section>
 
 <style>
@@ -76,5 +81,21 @@ const asOf = new Date(generatedAt).toLocaleDateString('en-US', {
     font-size: var(--body-size);
     color: var(--ink-secondary);
     margin: 0;
+  }
+
+  .stream-link {
+    margin: var(--stack) 0 0;
+  }
+
+  .stream-link a {
+    font-family: var(--font-body);
+    font-size: var(--body-size);
+    font-weight: 600;
+    color: var(--brand);
+    text-decoration: none;
+  }
+
+  .stream-link a:hover {
+    text-decoration: underline;
   }
 </style>
