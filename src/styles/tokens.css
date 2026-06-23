@@ -215,6 +215,10 @@ code,
  */
 .section-band {
   padding-block: var(--section-gap-mobile);
+  /* Horizontal inset so a raised band's content/cards don't sit flush against the
+     surface edge. Matches --gutter (the roster grid gap), so panel-edge→card spacing
+     equals card→card spacing. Applied to every band so all sections stay aligned. */
+  padding-inline: var(--gutter);
   border-top: 1px solid var(--border-subtle);
 }
 
