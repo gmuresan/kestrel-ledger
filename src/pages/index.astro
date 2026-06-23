@@ -143,9 +143,11 @@ const heroShots = homeShot ? [homeShot] : [];
 </BaseLayout>
 
 <style>
+  /* Symmetric vertical rhythm: the hero needs a bottom gap too, so its last child
+     (the screenshot exhibit / CTA) isn't flush against the next full-bleed band. */
   .hero {
     max-width: var(--entry-max);
-    margin: var(--section-gap-mobile) auto 0;
+    margin: var(--section-gap-mobile) auto;
   }
 
   .eyebrow {
