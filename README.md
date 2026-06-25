@@ -30,7 +30,7 @@ Served via Cloudflare Pages (git-connected, auto-deploys on push to `main`).
 - Build command: `npm run build` (`astro build`)
 - Output directory: `dist/`
 - `SITE` env (optional): canonical site URL for absolute feed/canonical links; defaults to
-  `https://aegentic.workers.dev` in `astro.config.mjs`.
+  `https://kestrelagent.xyz` in `astro.config.mjs`.
 
 `dist/` is gitignored — Cloudflare builds it from source on every push.
 

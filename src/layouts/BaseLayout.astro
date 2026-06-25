@@ -26,8 +26,8 @@ const {
 // Canonical URL for this page (Astro.site is set in astro.config.mjs). Used for og:url and
 // to drive the active-route nav state below — no client JS needed.
 const path = Astro.url.pathname;
-const canonical = new URL(path, Astro.site ?? 'https://ledger.aegentic.workers.dev').href;
-const ogImage = new URL('/og.png', Astro.site ?? 'https://ledger.aegentic.workers.dev').href;
+const canonical = new URL(path, Astro.site ?? 'https://kestrelagent.xyz').href;
+const ogImage = new URL('/og.png', Astro.site ?? 'https://kestrelagent.xyz').href;
 
 // Active-route helper: a top-level path is active when the current path equals it or is nested
 // under it (e.g. /ledger/2026-… → Ledger active). "/" matches only the home route exactly.

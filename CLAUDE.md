@@ -1,7 +1,7 @@
 # CLAUDE.md — aegentic-ledger
 
 Public build-in-public ledger for the live autonomous agent (Astro static site,
-deployed on Cloudflare). Lives at `ledger.aegentic.workers.dev`.
+deployed on Cloudflare). Lives at `kestrelagent.xyz`.
 
 ## Deploy
 
