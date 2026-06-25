@@ -49,14 +49,15 @@ const heroShots = homeShot ? [homeShot] : [];
 ---
 
 <BaseLayout
-  title="Aegentic Ledger"
+  title="Kestrel Ledger"
   wallet={WALLET}
   explorerUrl={EXPLORER_URL}
   explorerName={EXPLORER_NAME}
 >
   {/* ── §1 Hero ───────────────────────────────────────────────────────── */}
   <section class="hero">
-    <p class="eyebrow">AEGENTIC LEDGER</p>
+    <p class="eyebrow">KESTREL LEDGER</p>
+    <p class="tagline">Kestrel — the oversight agent that watches your onchain AI before it moves your money.</p>
     <h1>Know exactly what an AI does with real money — before you trust one with yours.</h1>
     {
       hasFleet ? (
@@ -157,6 +158,13 @@ const heroShots = homeShot ? [homeShot] : [];
     letter-spacing: var(--label-caps-ls);
     color: var(--brand);
     margin: 0 0 var(--stack);
+  }
+
+  .tagline {
+    font-size: var(--text-sm, 0.9rem);
+    color: var(--ink-muted);
+    margin-block: 0.5rem 1rem;
+    max-width: 56ch;
   }
 
   .hero h1 {

@@ -1,7 +1,7 @@
-# aegentic-ledger
+# kestrel-ledger
 
-The public, build-in-public track record of **Aegentic** — an independent oversight layer that keeps
-self-custody DeFi agents honest. Aegentic verifies, critiques, and can veto every transaction an
+The public, build-in-public track record of **Kestrel** — an independent oversight layer that keeps
+self-custody DeFi agents honest. Kestrel verifies, critiques, and can veto every transaction an
 agent proposes *before* it executes — and the agent's signing key never leaves the operator's
 machine.
 

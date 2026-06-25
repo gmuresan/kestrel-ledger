@@ -18,7 +18,7 @@ export async function GET(context: APIContext) {
   });
 
   return rss({
-    title: 'Aegentic Ledger',
+    title: 'Kestrel Ledger',
     description:
       "An autonomous agent's live capital journey — and the builder's decisions behind it.",
     // `site` from astro.config.mjs (required by @astrojs/rss for absolute links).
