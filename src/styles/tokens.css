@@ -192,11 +192,15 @@ a:hover {
   text-decoration: underline;
 }
 
-/* On-chain / deterministic data is ALWAYS mono (the receipt voice). */
+/* On-chain / deterministic data is ALWAYS mono (the receipt voice) + tabular-nums:
+ * figures share one digit advance so they align in columns and never reflow width
+ * as values change (the console-legibility standard ported from the operator
+ * dashboard, Epics 97/99 — "every numeric/address routes through mono + tabular-nums"). */
 code,
 .mono,
 .mono-data {
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
 }
 
 /* ═══════════════════════════ Global utility classes ═══════════════════════════
@@ -294,9 +298,14 @@ code,
   transform: translateY(-2px);
 }
 
+/* Reduced motion: soften, not flatline (Epic 99.3). Drop only the positional lift
+ * (transform) but KEEP the border/shadow crossfade, so hover still reads as a state
+ * change for reduced-motion users instead of snapping. */
 @media (prefers-reduced-motion: reduce) {
   .card-elevated {
-    transition: none;
+    transition:
+      box-shadow 0.16s ease,
+      border-color 0.16s ease;
   }
   .card-elevated:hover {
     transform: none;
@@ -408,6 +417,7 @@ code,
   width: 100%;
   font-family: var(--font-mono);
   font-size: var(--mono-sm-size);
+  font-variant-numeric: tabular-nums;
   color: var(--ink-muted);
   margin: var(--stack-tight) 0 0;
 }
@@ -429,6 +439,7 @@ code,
   font-family: var(--font-mono);
   font-size: var(--mono-sm-size);
   font-weight: var(--mono-data-weight);
+  font-variant-numeric: tabular-nums;
   line-height: 1.4;
   color: var(--ink-secondary);
   white-space: nowrap;

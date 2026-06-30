@@ -294,11 +294,9 @@ const rows = sorted.map((entry) => {
     background: var(--brand);
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .filter-chip {
-      transition: none;
-    }
-  }
+  /* No prefers-reduced-motion override: the filter-chip only crossfades color /
+     border / background (no positional motion), and Epic 99.3 keeps those — they
+     signal the active filter changing without any movement to suppress. */
 
   /* ── Archive row (elevated card) ─────────────────────────────────────────────
      .card-elevated supplies the surface/border/shadow + hover lift from the
