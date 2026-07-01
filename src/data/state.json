@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-06-23T22:17:15.471Z",
-  "cyclesSupervised": 47,
+  "generatedAt": "2026-07-01T15:31:01.114Z",
+  "cyclesSupervised": 49,
   "selfCustodiedCapital": {
     "formatted": "$95.39",
     "symbol": "USD"
@@ -39,31 +39,31 @@
     ],
     "build": [
       {
+        "slug": "2026-07-01-build-log-01",
+        "title": "Epic 105 — an allocator that never once resolved a desk",
+        "date": "2026-07-01",
+        "stream": "build-log"
+      },
+      {
+        "slug": "2026-06-25-build-log-01",
+        "title": "Epic 91 — a short desk on Arbitrum, and one number every desk has to speak",
+        "date": "2026-06-25",
+        "stream": "build-log"
+      },
+      {
         "slug": "2026-06-10-build-log-02",
         "title": "Epic 57 — asking a second model to argue against the first",
         "date": "2026-06-10",
-        "stream": "build-log"
-      },
-      {
-        "slug": "2026-06-09-build-log-03",
-        "title": "Epic 52 — giving the overseer a memory the agent can't write",
-        "date": "2026-06-09",
-        "stream": "build-log"
-      },
-      {
-        "slug": "2026-05-29-build-log-01",
-        "title": "Epic 17 — moving the signing key out of the agent and into the overseer",
-        "date": "2026-05-29",
         "stream": "build-log"
       }
     ]
   },
   "fleet": {
-    "agentsCount": 2,
-    "cyclesSupervised": 76,
-    "movesBlocked": 20,
+    "agentsCount": 3,
+    "cyclesSupervised": 96,
+    "movesBlocked": 25,
     "selfCustodiedCapital": {
-      "formatted": "$271.79",
+      "formatted": "$427.24",
       "symbol": "USD"
     },
     "drained": 0
@@ -71,7 +71,7 @@
   "perAgent": {
     "yield-hunter": {
       "agentName": "yield-hunter",
-      "cyclesSupervised": 47,
+      "cyclesSupervised": 49,
       "movesBlocked": 2,
       "selfCustodiedCapital": {
         "formatted": "$95.39",
@@ -102,10 +102,10 @@
     },
     "trend-trader": {
       "agentName": "trend-trader",
-      "cyclesSupervised": 29,
-      "movesBlocked": 18,
+      "cyclesSupervised": 39,
+      "movesBlocked": 19,
       "selfCustodiedCapital": {
-        "formatted": "$176.40",
+        "formatted": "$175.50",
         "symbol": "USD"
       },
       "drained": 0,
@@ -113,7 +113,7 @@
       "latestInterceptions": [
         {
           "policyLabel": "value-cap",
-          "intentSummary": "swap 311813609996376770547 0x940181a94a35a4569e4529a3cdfb74e38fd98631",
+          "intentSummary": "swap 159798572 0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
           "entrySlug": null
         },
         {
@@ -127,8 +127,41 @@
           "entrySlug": null
         },
         {
-          "policyLabel": "volatile-cap",
-          "intentSummary": "SWAP · 20 USDC → 0x9401…8631 · Base",
+          "policyLabel": "value-cap",
+          "intentSummary": "swap 311813609996376770547 0x940181a94a35a4569e4529a3cdfb74e38fd98631",
+          "entrySlug": null
+        }
+      ]
+    },
+    "short-seller": {
+      "agentName": "short-seller",
+      "cyclesSupervised": 8,
+      "movesBlocked": 4,
+      "selfCustodiedCapital": {
+        "formatted": "$156.35",
+        "symbol": "USD"
+      },
+      "drained": 0,
+      "currentPositions": [],
+      "latestInterceptions": [
+        {
+          "policyLabel": "value-cap",
+          "intentSummary": "open_short 100000000 0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+          "entrySlug": null
+        },
+        {
+          "policyLabel": "value-cap",
+          "intentSummary": "open_short 100000000 0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+          "entrySlug": null
+        },
+        {
+          "policyLabel": "value-cap",
+          "intentSummary": "open_short 50000000 0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
+          "entrySlug": null
+        },
+        {
+          "policyLabel": "value-cap",
+          "intentSummary": "open_short 63000000 0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
           "entrySlug": null
         }
       ]
