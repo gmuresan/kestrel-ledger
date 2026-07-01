@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-07-01T15:31:01.114Z",
-  "cyclesSupervised": 49,
+  "generatedAt": "2026-07-01T17:45:10.101Z",
+  "cyclesSupervised": 51,
   "selfCustodiedCapital": {
     "formatted": "$95.39",
     "symbol": "USD"
@@ -60,10 +60,10 @@
   },
   "fleet": {
     "agentsCount": 3,
-    "cyclesSupervised": 96,
+    "cyclesSupervised": 101,
     "movesBlocked": 25,
     "selfCustodiedCapital": {
-      "formatted": "$427.24",
+      "formatted": "$427.78",
       "symbol": "USD"
     },
     "drained": 0
@@ -71,7 +71,7 @@
   "perAgent": {
     "yield-hunter": {
       "agentName": "yield-hunter",
-      "cyclesSupervised": 49,
+      "cyclesSupervised": 51,
       "movesBlocked": 2,
       "selfCustodiedCapital": {
         "formatted": "$95.39",
@@ -102,14 +102,21 @@
     },
     "trend-trader": {
       "agentName": "trend-trader",
-      "cyclesSupervised": 39,
+      "cyclesSupervised": 40,
       "movesBlocked": 19,
       "selfCustodiedCapital": {
-        "formatted": "$175.50",
+        "formatted": "$175.88",
         "symbol": "USD"
       },
       "drained": 0,
-      "currentPositions": [],
+      "currentPositions": [
+        {
+          "protocol": "wallet",
+          "token": "USDC",
+          "symbol": "USDC",
+          "positionUsd": "159.747345"
+        }
+      ],
       "latestInterceptions": [
         {
           "policyLabel": "value-cap",
@@ -135,14 +142,27 @@
     },
     "short-seller": {
       "agentName": "short-seller",
-      "cyclesSupervised": 8,
+      "cyclesSupervised": 10,
       "movesBlocked": 4,
       "selfCustodiedCapital": {
-        "formatted": "$156.35",
+        "formatted": "$156.51",
         "symbol": "USD"
       },
       "drained": 0,
-      "currentPositions": [],
+      "currentPositions": [
+        {
+          "protocol": "wallet",
+          "token": "BTCBEAR1X",
+          "symbol": "BTCBEAR1X",
+          "positionUsd": "73.4637906603114045765230802973693814"
+        },
+        {
+          "protocol": "wallet",
+          "token": "USDC",
+          "symbol": "USDC",
+          "positionUsd": "50.861979"
+        }
+      ],
       "latestInterceptions": [
         {
           "policyLabel": "value-cap",
